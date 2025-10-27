@@ -2,6 +2,8 @@
 
 A Docker Registry HTTP API v2 simulator built with Bun, ElysiaJS, and lowdb. Implements the read-only subset of the Docker Registry spec for testing and development.
 
+![Demo](./docs/images/doc-image.png)
+
 ## What it does ?
 
 - Docker Registry API v2 spec-compliant

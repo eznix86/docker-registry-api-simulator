@@ -1,0 +1,42 @@
+services:
+  registry-full:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: registry-full
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./data/db-full.json:/data/db.json:ro
+    environment:
+      - DB_FILE=/data/db.json
+      - PORT=5001
+    restart: unless-stopped
+
+  registry-minimal:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: registry-minimal
+    ports:
+      - "5002:5001"
+    volumes:
+      - ./data/db-minimal.json:/data/db.json:ro
+    environment:
+      - DB_FILE=/data/db.json
+      - PORT=5001
+    restart: unless-stopped
+
+  registry-custom:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: registry-custom
+    ports:
+      - "5003:5001"
+    volumes:
+      - ./data/db-custom.json:/data/db.json:ro
+    environment:
+      - DB_FILE=/data/db.json
+      - PORT=5001
+    restart: unless-stopped

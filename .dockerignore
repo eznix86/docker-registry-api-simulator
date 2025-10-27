@@ -1,0 +1,9 @@
+node_modules
+*.log
+.git
+.gitignore
+README.md
+CLAUDE.md
+tests
+data
+index.ts

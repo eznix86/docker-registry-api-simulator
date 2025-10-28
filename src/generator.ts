@@ -1,11 +1,12 @@
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, mkdirSync } from "fs";
 import { resolve, extname } from "path";
 import { load } from "js-yaml";
 import { parse as parseJsonc } from "jsonc-parser";
 import { createHash, randomUUID } from "crypto";
-import { validateDatabase, validateSemantics } from "./src/utils/validator";
+import { validateDatabase, validateSemantics } from "./utils/validator";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
+import { JSONFilePreset } from "lowdb/node";
 
 const log = console.log;
 
@@ -28,7 +29,6 @@ interface Template {
   repositories: TemplateRepository[];
 }
 
-// OCI Image Config types
 interface ImageHistoryEntry {
   created?: string;
   created_by?: string;
@@ -109,7 +109,7 @@ function generateRandomSize(min: number, max: number): number {
 }
 
 function generateLayerBlob(): { digest: string; size: number } {
-  const size = generateRandomSize(1000000, 100000000); // 1MB to 100MB
+  const size = generateRandomSize(1000000, 100000000);
   const randomData = `layer-${randomUUID()}-${size}`;
   const digest = computeDigest(randomData);
   return { digest, size };
@@ -121,12 +121,9 @@ function generateConfigBlob(
   layerDigests: string[],
   repoName: string,
 ): ConfigBlob {
-  // Random date within last 365 days
   const now = faker.date.recent({ days: 365 }).toISOString();
 
-  // Create realistic history entries for each layer
   const history = layerDigests.map((digest, index) => {
-    // Each layer is progressively older (working backward from image creation)
     const layerDate = faker.date.past({ years: 1, refDate: now }).toISOString();
 
     if (index === 0) {
@@ -191,7 +188,6 @@ function generateConfigBlob(
     history,
   };
 
-  // Add optional fields for certain cases
   if (repoName === "postgres" || repoName === "redis" || repoName === "nginx") {
     config.config.User = "999";
     config.config.ExposedPorts = {
@@ -291,14 +287,11 @@ function generateManifestIndex(
   };
 }
 
-function generateDatabase(template: Template): DatabaseSchema {
-  const database: DatabaseSchema = {
-    auth: template.auth || [],
-    repositories: [],
-    tags: {},
-    manifests: {},
-    blobs: {},
-  };
+async function generateDatabase(
+  template: Template,
+  db: any,
+): Promise<void> {
+  db.data.auth = template.auth || [];
 
   for (const repo of template.repositories) {
     const format = repo.format || "oci";
@@ -306,13 +299,11 @@ function generateDatabase(template: Template): DatabaseSchema {
     const multiarch = repo.multiarch || false;
     const architectures = repo.architectures || ["amd64", "arm64"];
 
-    // Add repository
-    database.repositories.push({ name: repo.name });
-    database.tags[repo.name] = [];
+    db.data.repositories.push({ name: repo.name });
+    db.data.tags[repo.name] = [];
 
     for (const tag of repo.tags) {
       if (multiarch) {
-        // Generate multi-arch manifest (index/list)
         const platformManifests: Array<{
           digest: string;
           size: number;
@@ -321,7 +312,6 @@ function generateDatabase(template: Template): DatabaseSchema {
         }> = [];
 
         for (const arch of architectures) {
-          // Generate layers for this platform
           const layerCount = generateRandomSize(1, 5);
           const layers: Array<{ digest: string; size: number }> = [];
           const layerDigests: string[] = [];
@@ -332,7 +322,6 @@ function generateDatabase(template: Template): DatabaseSchema {
             layerDigests.push(layer.digest);
           }
 
-          // Generate config blob
           const configBlob = generateConfigBlob(
             arch,
             os,
@@ -343,10 +332,8 @@ function generateDatabase(template: Template): DatabaseSchema {
           const configDigest = computeDigest(configJson);
           const configSize = Buffer.byteLength(configJson);
 
-          // Store config blob
-          database.blobs[configDigest] = configBlob;
+          db.data.blobs[configDigest] = configBlob;
 
-          // Generate manifest for this platform
           const manifest = generateManifest(
             format,
             configDigest,
@@ -357,8 +344,7 @@ function generateDatabase(template: Template): DatabaseSchema {
           const manifestDigest = computeDigest(manifestJson);
           const manifestSize = Buffer.byteLength(manifestJson);
 
-          // Store manifest
-          database.manifests[manifestDigest] = {
+          db.data.manifests[manifestDigest] = {
             type: format,
             data: manifest,
           };
@@ -371,27 +357,22 @@ function generateDatabase(template: Template): DatabaseSchema {
           });
         }
 
-        // Generate manifest index/list
         const index = generateManifestIndex(format, platformManifests);
         const indexJson = JSON.stringify(index);
         const indexDigest = computeDigest(indexJson);
 
-        // Store manifest index
-        database.manifests[indexDigest] = {
+        db.data.manifests[indexDigest] = {
           type: format === "oci" ? "oci-index" : "docker-list",
           data: index,
         };
 
-        // Add tag pointing to index
-        database.tags[repo.name]!.push({
+        db.data.tags[repo.name]!.push({
           tag,
           digest: indexDigest,
         });
       } else {
-        // Generate single-arch manifest
         const arch = architectures[0] || "amd64";
 
-        // Generate layers
         const layerCount = generateRandomSize(1, 5);
         const layers: Array<{ digest: string; size: number }> = [];
         const layerDigests: string[] = [];
@@ -402,7 +383,6 @@ function generateDatabase(template: Template): DatabaseSchema {
           layerDigests.push(layer.digest);
         }
 
-        // Generate config blob
         const configBlob = generateConfigBlob(
           arch,
           os,
@@ -413,10 +393,8 @@ function generateDatabase(template: Template): DatabaseSchema {
         const configDigest = computeDigest(configJson);
         const configSize = Buffer.byteLength(configJson);
 
-        // Store config blob
-        database.blobs[configDigest] = configBlob;
+        db.data.blobs[configDigest] = configBlob;
 
-        // Generate manifest
         const manifest = generateManifest(
           format,
           configDigest,
@@ -426,14 +404,12 @@ function generateDatabase(template: Template): DatabaseSchema {
         const manifestJson = JSON.stringify(manifest);
         const manifestDigest = computeDigest(manifestJson);
 
-        // Store manifest
-        database.manifests[manifestDigest] = {
+        db.data.manifests[manifestDigest] = {
           type: format,
           data: manifest,
         };
 
-        // Add tag
-        database.tags[repo.name]!.push({
+        db.data.tags[repo.name]!.push({
           tag,
           digest: manifestDigest,
         });
@@ -441,87 +417,69 @@ function generateDatabase(template: Template): DatabaseSchema {
     }
   }
 
-  return database;
+  await db.write();
 }
 
-function main() {
-  const args = process.argv.slice(2);
+export async function generateDatabaseFromTemplate(
+  templatePath: string,
+): Promise<string> {
+  const fullTemplatePath = resolve(templatePath);
+  const fileExtension = extname(fullTemplatePath).toLowerCase();
 
-  if (args.length === 0) {
-    console.error(chalk.red(`Usage: bun run generator.ts <template.yaml|template.jsonc>`));
-    console.error(chalk.gray(`Example: bun run generator.ts templates/example.yaml`));
-    console.error(chalk.gray(`Example: bun run generator.ts templates/example.jsonc`));
-    process.exit(1);
+  log(
+    `${chalk.blue("Reading template from:")} ${chalk.cyan(fullTemplatePath)}`,
+  );
+  const templateContent = readFileSync(fullTemplatePath, "utf-8");
+
+  let template: Template;
+  if (fileExtension === ".json" || fileExtension === ".jsonc") {
+    template = parseJsonc(templateContent) as Template;
+  } else if (fileExtension === ".yaml" || fileExtension === ".yml") {
+    template = load(templateContent) as Template;
+  } else {
+    throw new Error(
+      `Unsupported file format: ${fileExtension}. Use .yaml, .yml, .json, or .jsonc`,
+    );
   }
 
-  const templatePath = resolve(args[0]);
-  const fileExtension = extname(templatePath).toLowerCase();
-
-  try {
-    // Read and parse template (YAML or JSONC)
-    log(`${chalk.blue('Reading template from:')} ${chalk.cyan(templatePath)}`);
-    const templateContent = readFileSync(templatePath, "utf-8");
-
-    let template: Template;
-    if (fileExtension === ".json" || fileExtension === ".jsonc") {
-      // Parse JSONC (JSON with comments)
-      template = parseJsonc(templateContent) as Template;
-    } else if (fileExtension === ".yaml" || fileExtension === ".yml") {
-      // Parse YAML
-      template = load(templateContent) as Template;
-    } else {
-      throw new Error(
-        `Unsupported file format: ${fileExtension}. Use .yaml, .yml, .json, or .jsonc`,
-      );
-    }
-
-    // Validate template structure
-    if (!template.repositories || !Array.isArray(template.repositories)) {
-      throw new Error('Template must contain a "repositories" array');
-    }
-
-    log(`
-${chalk.blue('Generating database from template...')}
-  ${chalk.gray('Repositories:')} ${chalk.white(template.repositories.length)}
-  ${chalk.gray('Authentication:')} ${chalk.white(template.auth ? 'enabled' : 'disabled')}`);
-
-    // Generate database
-    const database = generateDatabase(template);
-
-    // Validate database
-    log(chalk.blue(`
-Validating generated database...`));
-    validateDatabase(database);
-    validateSemantics(database);
-
-    // Generate output filename
-    const uuid = randomUUID();
-    const outputDir = resolve("data");
-    const outputPath = resolve(outputDir, `${uuid}.json`);
-
-    // Ensure data directory exists
-    mkdirSync(outputDir, { recursive: true });
-
-    // Write to file
-    writeFileSync(outputPath, JSON.stringify(database, null, 2), "utf-8");
-
-    log(`
-${chalk.green('Successfully generated database!')}
-  ${chalk.gray('Output:')} ${chalk.cyan(outputPath)}
-  ${chalk.gray('Repositories:')} ${chalk.white(database.repositories.length)}
-  ${chalk.gray('Total tags:')} ${chalk.white(Object.values(database.tags).reduce((sum, tags) => sum + tags.length, 0))}
-  ${chalk.gray('Manifests:')} ${chalk.white(Object.keys(database.manifests).length)}
-  ${chalk.gray('Blobs:')} ${chalk.white(Object.keys(database.blobs).length)}`);
-  } catch (error) {
-    console.error(chalk.red(`
-Generation failed:`));
-    if (error instanceof Error) {
-      console.error(chalk.yellow(`  ${error.message}`));
-    } else {
-      console.error(error);
-    }
-    process.exit(1);
+  if (!template.repositories || !Array.isArray(template.repositories)) {
+    throw new Error('Template must contain a "repositories" array');
   }
+
+  log(`
+${chalk.blue("Generating database from template...")}
+  ${chalk.gray("Repositories:")} ${chalk.white(template.repositories.length)}
+  ${chalk.gray("Authentication:")} ${chalk.white(template.auth ? "enabled" : "disabled")}`);
+
+  const uuid = randomUUID();
+  const outputDir = resolve("data");
+  const outputPath = resolve(outputDir, `${uuid}.json`);
+
+  mkdirSync(outputDir, { recursive: true });
+
+  const defaultData: DatabaseSchema = {
+    auth: [],
+    repositories: [],
+    tags: {},
+    manifests: {},
+    blobs: {},
+  };
+  const db = await JSONFilePreset<DatabaseSchema>(outputPath, defaultData);
+
+  await generateDatabase(template, db);
+
+  log(`
+${chalk.blue("Validating generated database...")}`);
+  validateDatabase(db.data);
+  validateSemantics(db.data);
+
+  log(`
+${chalk.green("Successfully generated database!")}
+  ${chalk.gray("Output:")} ${chalk.cyan(outputPath)}
+  ${chalk.gray("Repositories:")} ${chalk.white(db.data.repositories.length)}
+  ${chalk.gray("Total tags:")} ${chalk.white(Object.values(db.data.tags).reduce((sum, tags) => sum + tags.length, 0))}
+  ${chalk.gray("Manifests:")} ${chalk.white(Object.keys(db.data.manifests).length)}
+  ${chalk.gray("Blobs:")} ${chalk.white(Object.keys(db.data.blobs).length)}`);
+
+  return outputPath;
 }
-
-main();

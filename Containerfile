@@ -1,21 +1,21 @@
-FROM oven/bun:1.3.1-alpine
-
-RUN apk add --no-cache tini
+FROM oven/bun:1.3.1-alpine AS builder
+ENV NODE_ENV=production
 
 WORKDIR /app
 
 COPY package.json bun.lock ./
-
 RUN bun install --frozen-lockfile
 
-COPY server.ts ./
+COPY src ./src
 
-RUN mkdir -p /data
+RUN bun run build
+
+FROM oven/bun:1.3.1-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist/index.js /app/index.js
 
 EXPOSE 5001
 
-ENV DB_FILE=/data/db.json
-ENV PORT=5001
-
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["bun", "run", "server.ts"]
+CMD ["/app/index.js", "serve", "-f", "/data/db.json", "-p", "5001"]

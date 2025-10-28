@@ -3,13 +3,11 @@ import chalk from "chalk";
 
 const log = console.log;
 
-// Auth user schema
 const AuthUserSchema = v.object({
   username: v.pipe(v.string(), v.minLength(1, "Username must not be empty")),
   password: v.pipe(v.string(), v.minLength(1, "Password must not be empty")),
 });
 
-// Repository schema
 const RepositorySchema = v.object({
   name: v.pipe(
     v.string(),
@@ -21,7 +19,6 @@ const RepositorySchema = v.object({
   ),
 });
 
-// Tag schema
 const TagSchema = v.object({
   tag: v.pipe(v.string(), v.minLength(1, "Tag must not be empty")),
   digest: v.pipe(
@@ -31,7 +28,6 @@ const TagSchema = v.object({
   ),
 });
 
-// Manifest schema
 const ManifestSchema = v.object({
   type: v.picklist(
     ["oci", "docker", "oci-index", "docker-list"],
@@ -74,7 +70,6 @@ const ManifestSchema = v.object({
   }),
 });
 
-// Blob schema (config blob) - full OCI image config
 const BlobSchema = v.object({
   architecture: v.optional(v.string()),
   os: v.optional(v.string()),
@@ -110,7 +105,6 @@ const BlobSchema = v.object({
   ),
 });
 
-// Database schema
 const DatabaseSchema = v.object({
   auth: v.array(AuthUserSchema),
   repositories: v.array(RepositorySchema),
@@ -141,11 +135,9 @@ export function validateDatabase(data: unknown): void {
   }
 }
 
-// Additional semantic validations
 export function validateSemantics(data: any): void {
   const errors: string[] = [];
 
-  // Check that all tags reference existing manifests
   for (const [repoName, tags] of Object.entries(data.tags)) {
     if (!Array.isArray(tags)) continue;
 
@@ -158,7 +150,6 @@ export function validateSemantics(data: any): void {
     }
   }
 
-  // Check that all repositories in tags exist in repositories array
   for (const repoName of Object.keys(data.tags)) {
     if (!data.repositories.some((r: any) => r.name === repoName)) {
       errors.push(
@@ -167,7 +158,6 @@ export function validateSemantics(data: any): void {
     }
   }
 
-  // Check that manifest configs reference existing blobs
   for (const [digest, manifest] of Object.entries(data.manifests) as [
     string,
     any,
@@ -181,7 +171,6 @@ export function validateSemantics(data: any): void {
     }
   }
 
-  // Check that multi-arch manifests reference existing platform manifests
   for (const [digest, manifest] of Object.entries(data.manifests) as [
     string,
     any,

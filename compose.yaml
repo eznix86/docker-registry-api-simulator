@@ -8,10 +8,6 @@ services:
       - "5001:5001"
     volumes:
       - ./data/db-full.json:/data/db.json:ro
-      - ./server.ts:/app/server.ts:ro
-    environment:
-      - DB_FILE=/data/db.json
-      - PORT=5001
     restart: unless-stopped
 
   registry-minimal:
@@ -23,10 +19,6 @@ services:
       - "5002:5001"
     volumes:
       - ./data/db-minimal.json:/data/db.json:ro
-      - ./server.ts:/app/server.ts:ro
-    environment:
-      - DB_FILE=/data/db.json
-      - PORT=5001
     restart: unless-stopped
 
   registry-custom:
@@ -38,8 +30,4 @@ services:
       - "5003:5001"
     volumes:
       - ./data/db-custom.json:/data/db.json:ro
-      - ./server.ts:/app/server.ts:ro
-    environment:
-      - DB_FILE=/data/db.json
-      - PORT=5001
     restart: unless-stopped

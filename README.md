@@ -31,7 +31,20 @@ A Docker Registry HTTP API v2 simulator built with Bun, ElysiaJS, and lowdb. Imp
 bun install
 ```
 
+## Build
+
+Build the JavaScript bundle (for npm/bunx distribution):
+
+```bash
+bun run build
+```
+
+This creates a minified executable JavaScript file at `dist/index.js` (~1.2MB) that requires Bun to run.
+
+
 ## Docker
+
+The Containerfile uses a multi-stage build to create an optimized ~100MB image.
 
 Build and run with Docker Compose:
 
@@ -44,14 +57,24 @@ Three instances will start:
 - registry-minimal (port 5002) - 1 repository (data/db-minimal.json)
 - registry-custom (port 5003) - customizable (data/db-custom.json)
 
-## Usage
-
-Start the server:
+Or build a single image:
 
 ```bash
-bun dev                         # uses db.json
-DB_FILE=db.json bun dev         # to use a custom dataset
-PORT=3000 bun dev               # custom port
+docker build -f Containerfile -t registry-simulator .
+docker run -p 5001:5001 -v ./data/db.json:/data/db.json:ro registry-simulator
+```
+
+## Usage
+
+The simulator provides three commands:
+
+### Start the server
+
+```bash
+bun run serve                           # uses data/db.json on port 5001
+bun run serve -f data/db-full.json      # use specific database
+bun run serve -p 3000                   # use custom port
+bun run serve -f data/db-custom.json -p 3000  # both options
 ```
 
 Server runs on http://localhost:5001 by default.
@@ -60,7 +83,23 @@ Endpoints:
 - Health: http://localhost:5001/v2/
 - Swagger: http://localhost:5001/swagger
 
-Run tests:
+### Generate a database from template
+
+```bash
+bun run generate templates/example.yaml    # generates from YAML template
+bun run generate templates/example.jsonc   # or from JSONC template
+```
+
+The generated database will be saved in the `data/` directory with a unique UUID filename.
+
+### Validate a database file
+
+```bash
+bun run validate data/db.json              # validate database structure
+bun run validate data/db-custom.json       # validate any database file
+```
+
+### Run tests
 
 ```bash
 hurl --test tests/*.hurl
@@ -80,18 +119,21 @@ HEAD /v2/:name/blobs/:digest       # Blob headers
 
 ## Configuration
 
-The simulator uses JSON files for data. Switch between configurations using the `DB_FILE` environment variable.
+The simulator uses JSON files for data stored in the `data/` directory. Use the `-f` flag to specify which database to use.
 
 Available datasets:
-- `db.json` - 4 repositories (alpine, nginx, redis, postgres) with auth enabled
-- `db-minimal.json` - 1 repository (alpine) with auth disabled
-- `db-custom.json` - Examples of:
+- `data/db.json` - 4 repositories (alpine, nginx, redis, postgres) with auth enabled (default)
+- `data/db-minimal.json` - 1 repository (alpine) with auth disabled
+- `data/db-full.json` - Full example with multiple repositories
+- `data/db-custom.json` - Examples of:
   - Untagged repository (`untagged-repo`)
   - Single-arch manifest (`single-arch`)
   - Multi-arch manifest (`multi-arch` with amd64 and arm64)
   - Auth disabled
 
-Create custom datasets by copying and modifying these files.
+Create custom datasets by:
+1. Using the `generate` command with a YAML/JSONC template
+2. Copying and modifying existing database files
 
 ### Authentication
 

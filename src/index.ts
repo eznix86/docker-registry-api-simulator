@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 import { Command } from 'commander';
-import { spawn } from 'child_process';
-import { resolve } from 'path';
 import ora from 'ora';
 import chalk from 'chalk';
+import { createServer } from './server';
+import { generateDatabaseFromTemplate } from './generator';
 
 const log = console.log;
 const program = new Command();
@@ -16,56 +16,34 @@ program
 program
   .command('serve')
   .description('Start the Docker Registry API v2 simulator server')
-  .option('-f, --db-file <path>', 'Path to the database JSON file', 'db.json')
+  .option('-f, --db-file <path>', 'Path to the database JSON file', 'data/db.json')
   .option('-p, --port <number>', 'Port to listen on', '5001')
-  .action((options) => {
+  .action(async (options) => {
     log(`${chalk.blue('Starting server with database:')} ${chalk.cyan(options.dbFile)}`);
 
-    const env = {
-      ...process.env,
-      DB_FILE: options.dbFile,
-      PORT: options.port.toString()
-    };
-
-    const child = spawn('bun', ['run', resolve(__dirname, '../server.ts')], {
-      env,
-      stdio: 'inherit'
-    });
-
-    child.on('exit', (code) => process.exit(code || 0));
+    const server = await createServer(options.dbFile, parseInt(options.port));
+    server.start();
   });
 
 program
   .command('generate')
   .description('Generate a database from a template file')
   .argument('<template>', 'Path to template file (YAML or JSONC)')
-  .action((template) => {
+  .action(async (template) => {
     const spinner = ora('Generating database from template...').start();
 
-    const child = spawn('bun', ['run', resolve(__dirname, '../generator.ts'), template], {
-      stdio: 'pipe'
-    });
-
-    let output = '';
-
-    child.stdout?.on('data', (data) => {
-      output += data.toString();
-    });
-
-    child.stderr?.on('data', (data) => {
-      output += data.toString();
-    });
-
-    child.on('exit', (code) => {
-      if (code === 0) {
-        spinner.succeed(chalk.green('Database generated successfully'));
-        log(output);
+    try {
+      await generateDatabaseFromTemplate(template);
+      spinner.succeed(chalk.green('Database generated successfully'));
+    } catch (error) {
+      spinner.fail(chalk.red('Generation failed'));
+      if (error instanceof Error) {
+        console.error(chalk.red(error.message));
       } else {
-        spinner.fail(chalk.red('Generation failed'));
-        console.error(output);
-        process.exit(code || 1);
+        console.error(error);
       }
-    });
+      process.exit(1);
+    }
   });
 
 program
@@ -76,22 +54,30 @@ program
     const spinner = ora('Validating database file...').start();
 
     try {
-      const { readFileSync } = await import('fs');
+      const { JSONFilePreset } = await import('lowdb/node');
       const { validateDatabase, validateSemantics } = await import('./utils/validator');
 
-      const data = JSON.parse(readFileSync(file, 'utf-8'));
+      // Read database using lowdb
+      const defaultData = {
+        auth: [],
+        repositories: [],
+        tags: {},
+        manifests: {},
+        blobs: {},
+      };
+      const db = await JSONFilePreset(file, defaultData);
 
-      validateDatabase(data);
-      validateSemantics(data);
+      validateDatabase(db.data);
+      validateSemantics(db.data);
 
       spinner.succeed(chalk.green('Validation successful'));
 
       log(`
 ${chalk.cyan('Database Statistics:')}
-  ${chalk.gray('Repositories:')} ${chalk.white(data.repositories?.length || 0)}
-  ${chalk.gray('Total tags:')} ${chalk.white(Object.values(data.tags || {}).reduce((sum: number, tags: any) => sum + tags.length, 0))}
-  ${chalk.gray('Manifests:')} ${chalk.white(Object.keys(data.manifests || {}).length)}
-  ${chalk.gray('Blobs:')} ${chalk.white(Object.keys(data.blobs || {}).length)}`);
+  ${chalk.gray('Repositories:')} ${chalk.white(db.data.repositories?.length || 0)}
+  ${chalk.gray('Total tags:')} ${chalk.white(Object.values(db.data.tags || {}).reduce((sum: number, tags: any) => sum + tags.length, 0))}
+  ${chalk.gray('Manifests:')} ${chalk.white(Object.keys(db.data.manifests || {}).length)}
+  ${chalk.gray('Blobs:')} ${chalk.white(Object.keys(db.data.blobs || {}).length)}`);
 
       process.exit(0);
     } catch (error) {

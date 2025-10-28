@@ -29,3 +29,10 @@ jobs:
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun publish --verbose -p --access public
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          make_latest: true
+          generate_release_notes: true
+          prerelease: true

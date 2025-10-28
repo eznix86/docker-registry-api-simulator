@@ -37,4 +37,4 @@ jobs:
         with:
           make_latest: true
           generate_release_notes: true
-          prerelease: true
+          prerelease: false

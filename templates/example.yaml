@@ -1,0 +1,80 @@
+# Example template for generating Docker Registry database
+# This demonstrates all available options in the simplified DSL
+
+# Optional: Authentication credentials
+# Omit this section for no authentication
+auth:
+  - username: admin
+    password: admin123
+  - username: user
+    password: user123
+
+# Repositories with their tags and optional configuration
+repositories:
+  # Simple repository with default settings (OCI format, single-arch amd64)
+  - name: alpine
+    tags:
+      - latest
+      - "3.18"
+      - "3.17"
+
+  # Repository with Docker format instead of OCI
+  - name: nginx
+    format: docker
+    tags:
+      - latest
+      - "1.25"
+
+  # Repository with custom OS
+  - name: postgres
+    os: linux
+    tags:
+      - latest
+      - "16"
+      - "15"
+
+  # Multi-architecture repository (default: amd64 + arm64)
+  - name: redis
+    multiarch: true
+    tags:
+      - latest
+      - "7.2"
+
+  # Multi-architecture with custom architectures
+  - name: myapp
+    multiarch: true
+    architectures:
+      - amd64
+      - arm64
+      - arm
+    tags:
+      - latest
+      - v1.0.0
+      - v1.0.1
+
+  # Multi-architecture with Docker format
+  - name: customapp
+    format: docker
+    multiarch: true
+    architectures:
+      - amd64
+      - arm64
+    tags:
+      - latest
+
+# Template Options Reference:
+#
+# Per repository:
+#   name (required): Repository name (lowercase alphanumeric with optional separators)
+#   tags (required): List of tag names
+#   format (optional): 'oci' (default) or 'docker' - controls manifest media type
+#   multiarch (optional): true to create multi-arch manifest list/index (default: false)
+#   architectures (optional): List of architectures for multiarch (default: ['amd64', 'arm64'])
+#   os (optional): Operating system (default: 'linux')
+#
+# Defaults:
+#   - Format: OCI
+#   - Architecture: amd64 (single-arch) or [amd64, arm64] (multi-arch)
+#   - OS: linux
+#   - When multiarch=true with format=oci: creates oci-index
+#   - When multiarch=true with format=docker: creates docker-list

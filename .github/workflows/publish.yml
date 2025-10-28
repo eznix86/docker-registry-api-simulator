@@ -32,9 +32,14 @@ jobs:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bun publish --verbose -p --access public
 
-      - name: Release
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          make_latest: true
-          generate_release_notes: true
-          prerelease: false
+          body: ${{ steps.changelog.outputs.changes }}

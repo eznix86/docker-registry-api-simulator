@@ -1,6 +1,6 @@
 {
   "name": "docker-api-simulator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Docker Registry HTTP API v2 simulator for testing and development",
   "license": "MIT",
   "type": "module",

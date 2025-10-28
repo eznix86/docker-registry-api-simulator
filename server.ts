@@ -3,6 +3,9 @@ import { swagger } from '@elysiajs/swagger';
 import { JSONFilePreset } from 'lowdb/node';
 import { createHash } from 'crypto';
 import { validateDatabase, validateSemantics } from './src/utils/validator';
+import chalk from 'chalk';
+
+const log = console.log;
 
 interface Repository {
   name: string;
@@ -35,13 +38,13 @@ const dbFile = process.env.DB_FILE || 'db.json';
 const defaultData: DatabaseSchema = { auth: [], repositories: [], tags: {}, manifests: {}, blobs: {} };
 const db = await JSONFilePreset<DatabaseSchema>(dbFile, defaultData);
 
-console.log(`Loaded database from: ${dbFile}`);
+log(`${chalk.blue('Loaded database from:')} ${chalk.cyan(dbFile)}`);
 
 // Validate database structure and semantics
 validateDatabase(db.data);
 validateSemantics(db.data);
 
-console.log(`Authentication: ${db.data.auth && db.data.auth.length > 0 ? 'enabled' : 'disabled'}`);
+log(`${chalk.blue('Authentication:')} ${chalk.cyan(db.data.auth && db.data.auth.length > 0 ? 'enabled' : 'disabled')}`);
 
 function computeDigest(content: string): string {
   return 'sha256:' + createHash('sha256').update(content).digest('hex');
@@ -480,14 +483,17 @@ const app = new Elysia()
 
   .listen(process.env.PORT || 5001);
 
-console.log(`Docker Registry API simulator running on http://localhost:${app.server?.port}`);
-console.log(`Swagger documentation: http://localhost:${app.server?.port}/swagger`);
-console.log(`Health check: http://localhost:${app.server?.port}/v2/`);
+log(`
+${chalk.green('Docker Registry API simulator running')}
+  ${chalk.gray('Server:')} ${chalk.cyan(`http://localhost:${app.server?.port}`)}
+  ${chalk.gray('Swagger:')} ${chalk.cyan(`http://localhost:${app.server?.port}/swagger`)}
+  ${chalk.gray('Health:')} ${chalk.cyan(`http://localhost:${app.server?.port}/v2/`)}`);
 
 const gracefulShutdown = (signal: string) => {
-  console.log(`Received ${signal}, shutting down gracefully...`);
+  log(`
+${chalk.yellow(`Received ${signal}, shutting down gracefully...`)}`);
   app.server?.stop();
-  console.log('Server closed');
+  log(`${chalk.green('Server closed')}`);
   process.exit(0);
 };
 

@@ -5,6 +5,9 @@ import { parse as parseJsonc } from "jsonc-parser";
 import { createHash, randomUUID } from "crypto";
 import { validateDatabase, validateSemantics } from "./src/utils/validator";
 import { faker } from "@faker-js/faker";
+import chalk from "chalk";
+
+const log = console.log;
 
 interface TemplateAuth {
   username: string;
@@ -445,9 +448,9 @@ function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error("Usage: bun run generator.ts <template.yaml|template.jsonc>");
-    console.error("Example: bun run generator.ts templates/example.yaml");
-    console.error("Example: bun run generator.ts templates/example.jsonc");
+    console.error(chalk.red(`Usage: bun run generator.ts <template.yaml|template.jsonc>`));
+    console.error(chalk.gray(`Example: bun run generator.ts templates/example.yaml`));
+    console.error(chalk.gray(`Example: bun run generator.ts templates/example.jsonc`));
     process.exit(1);
   }
 
@@ -456,7 +459,7 @@ function main() {
 
   try {
     // Read and parse template (YAML or JSONC)
-    console.log(`Reading template from: ${templatePath}`);
+    log(`${chalk.blue('Reading template from:')} ${chalk.cyan(templatePath)}`);
     const templateContent = readFileSync(templatePath, "utf-8");
 
     let template: Template;
@@ -477,15 +480,17 @@ function main() {
       throw new Error('Template must contain a "repositories" array');
     }
 
-    console.log(`Generating database from template...`);
-    console.log(`  Repositories: ${template.repositories.length}`);
-    console.log(`  Authentication: ${template.auth ? "enabled" : "disabled"}`);
+    log(`
+${chalk.blue('Generating database from template...')}
+  ${chalk.gray('Repositories:')} ${chalk.white(template.repositories.length)}
+  ${chalk.gray('Authentication:')} ${chalk.white(template.auth ? 'enabled' : 'disabled')}`);
 
     // Generate database
     const database = generateDatabase(template);
 
     // Validate database
-    console.log("\nValidating generated database...");
+    log(chalk.blue(`
+Validating generated database...`));
     validateDatabase(database);
     validateSemantics(database);
 
@@ -500,18 +505,18 @@ function main() {
     // Write to file
     writeFileSync(outputPath, JSON.stringify(database, null, 2), "utf-8");
 
-    console.log(`\n✓ Successfully generated database!`);
-    console.log(`  Output: ${outputPath}`);
-    console.log(`  Repositories: ${database.repositories.length}`);
-    console.log(
-      `  Total tags: ${Object.values(database.tags).reduce((sum, tags) => sum + tags.length, 0)}`,
-    );
-    console.log(`  Manifests: ${Object.keys(database.manifests).length}`);
-    console.log(`  Blobs: ${Object.keys(database.blobs).length}`);
+    log(`
+${chalk.green('Successfully generated database!')}
+  ${chalk.gray('Output:')} ${chalk.cyan(outputPath)}
+  ${chalk.gray('Repositories:')} ${chalk.white(database.repositories.length)}
+  ${chalk.gray('Total tags:')} ${chalk.white(Object.values(database.tags).reduce((sum, tags) => sum + tags.length, 0))}
+  ${chalk.gray('Manifests:')} ${chalk.white(Object.keys(database.manifests).length)}
+  ${chalk.gray('Blobs:')} ${chalk.white(Object.keys(database.blobs).length)}`);
   } catch (error) {
-    console.error("\n✗ Generation failed:");
+    console.error(chalk.red(`
+Generation failed:`));
     if (error instanceof Error) {
-      console.error(`  ${error.message}`);
+      console.error(chalk.yellow(`  ${error.message}`));
     } else {
       console.error(error);
     }

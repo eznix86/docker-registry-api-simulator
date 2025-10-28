@@ -1,16 +1,22 @@
 {
   "auth": [],
   "repositories": [
-    { "name": "alpine" }
+    {
+      "name": "alpine"
+    }
   ],
   "tags": {
     "alpine": [
-      { "tag": "latest", "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b" }
+      {
+        "tag": "latest",
+        "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
+      }
     ]
   },
   "manifests": {
     "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -25,22 +31,6 @@
             "size": 3374563
           }
         ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:7e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c5e8e",
-          "size": 1471
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
-            "digest": "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8",
-            "size": 3374563
-          }
-        ]
       }
     }
   },
@@ -49,13 +39,20 @@
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"]
-      }
+        "diff_ids": [
+          "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"
+        ]
+      },
+      "created": "2025-03-30T01:48:29.758Z"
     }
   }
 }

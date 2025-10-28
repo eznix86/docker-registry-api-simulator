@@ -1,37 +1,78 @@
 {
   "auth": [
-    { "username": "admin", "password": "admin123" },
-    { "username": "user", "password": "user123" }
+    {
+      "username": "admin",
+      "password": "admin123"
+    },
+    {
+      "username": "user",
+      "password": "user123"
+    }
   ],
   "repositories": [
-    { "name": "alpine" },
-    { "name": "nginx" },
-    { "name": "redis" },
-    { "name": "postgres" }
+    {
+      "name": "alpine"
+    },
+    {
+      "name": "nginx"
+    },
+    {
+      "name": "redis"
+    },
+    {
+      "name": "postgres"
+    }
   ],
   "tags": {
     "alpine": [
-      { "tag": "latest", "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b" },
-      { "tag": "3.18", "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b" },
-      { "tag": "3.17", "digest": "sha256:124c7d2707904eea7431fffe91522a01e5a861a624ee31d03372cc1d138a3126" }
+      {
+        "tag": "latest",
+        "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
+      },
+      {
+        "tag": "3.18",
+        "digest": "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
+      },
+      {
+        "tag": "3.17",
+        "digest": "sha256:124c7d2707904eea7431fffe91522a01e5a861a624ee31d03372cc1d138a3126"
+      }
     ],
     "nginx": [
-      { "tag": "latest", "digest": "sha256:6af79ae5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e" },
-      { "tag": "1.25", "digest": "sha256:6af79ae5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e" },
-      { "tag": "alpine", "digest": "sha256:9c9e5e1d8f9f1e9f8e7f6e5d4c3b2a1b2c3d4e5f6e7f8e9f0a1b2c3d4e5f6e7" }
+      {
+        "tag": "latest",
+        "digest": "sha256:6af79ae5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e"
+      },
+      {
+        "tag": "1.25",
+        "digest": "sha256:6af79ae5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e"
+      }
     ],
     "redis": [
-      { "tag": "latest", "digest": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2" },
-      { "tag": "7.2", "digest": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2" }
+      {
+        "tag": "latest",
+        "digest": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+      },
+      {
+        "tag": "7.2",
+        "digest": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+      }
     ],
     "postgres": [
-      { "tag": "latest", "digest": "sha256:9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8" },
-      { "tag": "16", "digest": "sha256:9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8" }
+      {
+        "tag": "latest",
+        "digest": "sha256:9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8"
+      },
+      {
+        "tag": "16",
+        "digest": "sha256:9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8"
+      }
     ]
   },
   "manifests": {
     "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -42,22 +83,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8",
-            "size": 3374563
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:7e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c5e8e",
-          "size": 1471
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8",
             "size": 3374563
           }
@@ -65,7 +90,8 @@
       }
     },
     "sha256:124c7d2707904eea7431fffe91522a01e5a861a624ee31d03372cc1d138a3126": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -76,22 +102,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:5bcde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa19",
-            "size": 3284451
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:8e02a1b0b2ccd1e639f9e9ccc5eddfa207d4f1868af9b9d2e0f8e6d1d6a6d6f9",
-          "size": 1469
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:5bcde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa19",
             "size": 3284451
           }
@@ -99,7 +109,8 @@
       }
     },
     "sha256:6af79ae5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -110,22 +121,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:a603fa5e3b41485f82b8e95e7b5b8e8f4e7e6e5e4d3c2b1a0b1c2d3e4f5a6b7",
-            "size": 29143774
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:9f03b1c0c3dde2f740f0e0ddd6feegb308e5f2979bg0c0d3f1f9f6f7e1b7d7g0",
-          "size": 7823
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:a603fa5e3b41485f82b8e95e7b5b8e8f4e7e6e5e4d3c2b1a0b1c2d3e4f5a6b7",
             "size": 29143774
           }
@@ -133,7 +128,8 @@
       }
     },
     "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -144,22 +140,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3",
-            "size": 31456789
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:1f2e3d4c5b6a7b8c9d0e1f2e3d4c5b6a7b8c9d0e1f2e3d4c5b6a7b8c9d0e1f2",
-          "size": 6234
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3",
             "size": 31456789
           }
@@ -167,7 +147,8 @@
       }
     },
     "sha256:9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -178,22 +159,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b",
-            "size": 80123456
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:0f1e2d3c4b5a6b7c8d9e0f1e2d3c4b5a6b7c8d9e0f1e2d3c4b5a6b7c8d9e0f1",
-          "size": 8912
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b",
             "size": 80123456
           }
@@ -206,64 +171,109 @@
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"]
-      }
+        "diff_ids": [
+          "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"
+        ]
+      },
+      "created": "2025-08-12T05:21:03.746Z"
     },
     "sha256:8e02a1b0b2ccd1e639f9e9ccc5eddfa207d4f1868af9b9d2e0f8e6d1d6a6d6f9": {
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:5bcde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa19"]
-      }
+        "diff_ids": [
+          "sha256:5bcde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa19"
+        ]
+      },
+      "created": "2025-04-24T21:04:58.775Z"
     },
     "sha256:9f03b1c0c3dde2f740f0e0ddd6feegb308e5f2979bg0c0d3f1f9f6f7e1b7d7g0": {
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "NGINX_VERSION=1.25.3"],
-        "ExposedPorts": {"80/tcp": {}},
-        "Cmd": ["nginx", "-g", "daemon off;"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "NGINX_VERSION=1.25.3"
+        ],
+        "ExposedPorts": {
+          "80/tcp": {}
+        },
+        "Cmd": [
+          "nginx",
+          "-g",
+          "daemon off;"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:a603fa5e3b41485f82b8e95e7b5b8e8f4e7e6e5e4d3c2b1a0b1c2d3e4f5a6b7"]
-      }
+        "diff_ids": [
+          "sha256:a603fa5e3b41485f82b8e95e7b5b8e8f4e7e6e5e4d3c2b1a0b1c2d3e4f5a6b7"
+        ]
+      },
+      "created": "2025-03-06T02:30:34.386Z"
     },
     "sha256:1f2e3d4c5b6a7b8c9d0e1f2e3d4c5b6a7b8c9d0e1f2e3d4c5b6a7b8c9d0e1f2": {
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "ExposedPorts": {"6379/tcp": {}},
-        "Cmd": ["redis-server"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "ExposedPorts": {
+          "6379/tcp": {}
+        },
+        "Cmd": [
+          "redis-server"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3"]
-      }
+        "diff_ids": [
+          "sha256:2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3"
+        ]
+      },
+      "created": "2025-09-08T09:12:23.123Z"
     },
     "sha256:0f1e2d3c4b5a6b7c8d9e0f1e2d3c4b5a6b7c8d9e0f1e2d3c4b5a6b7c8d9e0f1": {
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "POSTGRES_VERSION=16"],
-        "ExposedPorts": {"5432/tcp": {}},
-        "Cmd": ["postgres"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "POSTGRES_VERSION=16"
+        ],
+        "ExposedPorts": {
+          "5432/tcp": {}
+        },
+        "Cmd": [
+          "postgres"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"]
-      }
+        "diff_ids": [
+          "sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"
+        ]
+      },
+      "created": "2025-07-11T02:25:14.037Z"
     }
   }
 }

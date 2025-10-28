@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia';
 import { swagger } from '@elysiajs/swagger';
 import { JSONFilePreset } from 'lowdb/node';
 import { createHash } from 'crypto';
+import { validateDatabase, validateSemantics } from './validator';
 
 interface Repository {
   name: string;
@@ -17,11 +18,16 @@ interface AuthUser {
   password: string;
 }
 
+interface Manifest {
+  type: 'oci' | 'docker' | 'oci-index' | 'docker-list';
+  data: any;
+}
+
 interface DatabaseSchema {
   auth: AuthUser[];
   repositories: Repository[];
   tags: Record<string, Tag[]>;
-  manifests: Record<string, any>;
+  manifests: Record<string, Manifest>;
   blobs: Record<string, any>;
 }
 
@@ -30,6 +36,11 @@ const defaultData: DatabaseSchema = { auth: [], repositories: [], tags: {}, mani
 const db = await JSONFilePreset<DatabaseSchema>(dbFile, defaultData);
 
 console.log(`Loaded database from: ${dbFile}`);
+
+// Validate database structure and semantics
+validateDatabase(db.data);
+validateSemantics(db.data);
+
 console.log(`Authentication: ${db.data.auth && db.data.auth.length > 0 ? 'enabled' : 'disabled'}`);
 
 function computeDigest(content: string): string {
@@ -38,6 +49,68 @@ function computeDigest(content: string): string {
 
 function buildLinkHeader(baseUrl: string, n: number, last: string): string {
   return `<${baseUrl}?n=${n}&last=${last}>; rel="next"`;
+}
+
+function selectManifestFormat(accept: string, manifestEntry: Manifest): { manifest: any; contentType: string } | null {
+  const acceptTypes = new Set(accept.split(',').map(t => t.trim()));
+
+  const typeToMediaType: Record<string, string> = {
+    'oci-index': 'application/vnd.oci.image.index.v1+json',
+    'docker-list': 'application/vnd.docker.distribution.manifest.list.v2+json',
+    'oci': 'application/vnd.oci.image.manifest.v1+json',
+    'docker': 'application/vnd.docker.distribution.manifest.v2+json'
+  };
+
+  const contentType = typeToMediaType[manifestEntry.type];
+
+  // If the exact format is accepted, return it
+  if (contentType && acceptTypes.has(contentType)) {
+    return {
+      manifest: manifestEntry.data,
+      contentType
+    };
+  }
+
+  // Fallback: For single-arch manifests, accept either OCI or Docker format interchangeably
+  // This is for testing/simulation purposes - real registries would have separate digests
+  if ((manifestEntry.type === 'oci' || manifestEntry.type === 'docker') && contentType) {
+    const singleArchTypes = [
+      'application/vnd.oci.image.manifest.v1+json',
+      'application/vnd.docker.distribution.manifest.v2+json'
+    ];
+
+    for (const mediaType of singleArchTypes) {
+      if (acceptTypes.has(mediaType)) {
+        // Transform the manifest data to match the requested media type
+        const transformedManifest = { ...manifestEntry.data, mediaType };
+        return {
+          manifest: transformedManifest,
+          contentType: mediaType
+        };
+      }
+    }
+  }
+
+  // Fallback: For multi-arch manifests, accept either OCI index or Docker list interchangeably
+  if ((manifestEntry.type === 'oci-index' || manifestEntry.type === 'docker-list') && contentType) {
+    const multiArchTypes = [
+      'application/vnd.oci.image.index.v1+json',
+      'application/vnd.docker.distribution.manifest.list.v2+json'
+    ];
+
+    for (const mediaType of multiArchTypes) {
+      if (acceptTypes.has(mediaType)) {
+        // Transform the manifest data to match the requested media type
+        const transformedManifest = { ...manifestEntry.data, mediaType };
+        return {
+          manifest: transformedManifest,
+          contentType: mediaType
+        };
+      }
+    }
+  }
+
+  return null;
 }
 
 function registryError(code: string, message: string, status = 404) {
@@ -143,7 +216,7 @@ const app = new Elysia()
     }
 
     if (hasMore && repos.length > 0) {
-      set.headers['Link'] = buildLinkHeader('/v2/_catalog', n!, repos[repos.length - 1]);
+      set.headers['Link'] = buildLinkHeader('/v2/_catalog', n!, repos[repos.length - 1]!);
     }
 
     return { repositories: repos };
@@ -192,7 +265,7 @@ const app = new Elysia()
 
     // Add Link header
     if (hasMore && tags.length > 0) {
-      set.headers['Link'] = buildLinkHeader(`/v2/${name}/tags/list`, n!, tags[tags.length - 1]);
+      set.headers['Link'] = buildLinkHeader(`/v2/${name}/tags/list`, n!, tags[tags.length - 1]!);
     }
 
     return { name, tags };
@@ -237,28 +310,12 @@ const app = new Elysia()
     }
 
     // Content negotiation
-    let manifest;
-    let contentType;
-
-    if (accept.includes('application/vnd.oci.image.index.v1+json')) {
-      manifest = manifestEntry['oci-index'];
-      contentType = 'application/vnd.oci.image.index.v1+json';
-    } else if (accept.includes('application/vnd.docker.distribution.manifest.list.v2+json')) {
-      manifest = manifestEntry['docker-list'];
-      contentType = 'application/vnd.docker.distribution.manifest.list.v2+json';
-    } else if (accept.includes('application/vnd.oci.image.manifest.v1+json')) {
-      manifest = manifestEntry.oci;
-      contentType = 'application/vnd.oci.image.manifest.v1+json';
-    } else if (accept.includes('application/vnd.docker.distribution.manifest.v2+json')) {
-      manifest = manifestEntry.docker;
-      contentType = 'application/vnd.docker.distribution.manifest.v2+json';
-    } else {
-      return registryError('UNSUPPORTED', 'requested media type not supported', 406);
+    const selected = selectManifestFormat(accept, manifestEntry);
+    if (!selected) {
+      return registryError('UNSUPPORTED', 'requested media type not supported or not available', 406);
     }
 
-    if (!manifest) {
-      return registryError('UNSUPPORTED', 'requested media type not available for this manifest', 406);
-    }
+    const { manifest, contentType } = selected;
 
     const manifestJson = JSON.stringify(manifest);
     const manifestDigest = computeDigest(manifestJson);
@@ -314,28 +371,13 @@ const app = new Elysia()
       return registryError('MANIFEST_UNKNOWN', 'manifest not found', 404);
     }
 
-    let manifest;
-    let contentType;
-
-    if (accept.includes('application/vnd.oci.image.index.v1+json')) {
-      manifest = manifestEntry['oci-index'];
-      contentType = 'application/vnd.oci.image.index.v1+json';
-    } else if (accept.includes('application/vnd.docker.distribution.manifest.list.v2+json')) {
-      manifest = manifestEntry['docker-list'];
-      contentType = 'application/vnd.docker.distribution.manifest.list.v2+json';
-    } else if (accept.includes('application/vnd.oci.image.manifest.v1+json')) {
-      manifest = manifestEntry.oci;
-      contentType = 'application/vnd.oci.image.manifest.v1+json';
-    } else if (accept.includes('application/vnd.docker.distribution.manifest.v2+json')) {
-      manifest = manifestEntry.docker;
-      contentType = 'application/vnd.docker.distribution.manifest.v2+json';
-    } else {
-      return registryError('UNSUPPORTED', 'requested media type not supported', 406);
+    // Content negotiation
+    const selected = selectManifestFormat(accept, manifestEntry);
+    if (!selected) {
+      return registryError('UNSUPPORTED', 'requested media type not supported or not available', 406);
     }
 
-    if (!manifest) {
-      return registryError('UNSUPPORTED', 'requested media type not available for this manifest', 406);
-    }
+    const { manifest, contentType } = selected;
 
     const manifestJson = JSON.stringify(manifest);
     const manifestDigest = computeDigest(manifestJson);
@@ -441,3 +483,13 @@ const app = new Elysia()
 console.log(`Docker Registry API simulator running on http://localhost:${app.server?.port}`);
 console.log(`Swagger documentation: http://localhost:${app.server?.port}/swagger`);
 console.log(`Health check: http://localhost:${app.server?.port}/v2/`);
+
+const gracefulShutdown = (signal: string) => {
+  console.log(`Received ${signal}, shutting down gracefully...`);
+  app.server?.stop();
+  console.log('Server closed');
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

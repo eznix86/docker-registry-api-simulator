@@ -1,7 +1,8 @@
 {
   "name": "distribution-api-simulator",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/js-yaml": "^4.0.9"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -9,12 +10,17 @@
   "private": true,
   "scripts": {
     "dev": "bun run server.ts",
-    "check": "hurl --test tests/*.hurl"
+    "check": "hurl --test tests/*.hurl",
+    "generate": "bun run generator.ts"
   },
   "type": "module",
   "dependencies": {
     "@elysiajs/swagger": "^1.3.1",
+    "@faker-js/faker": "^10.1.0",
     "elysia": "^1.4.13",
-    "lowdb": "^7.0.1"
+    "js-yaml": "^4.1.0",
+    "jsonc-parser": "^3.3.1",
+    "lowdb": "^7.0.1",
+    "valibot": "^1.1.0"
   }
 }

@@ -1,22 +1,43 @@
 {
   "auth": [],
   "repositories": [
-    { "name": "untagged-repo" },
-    { "name": "single-arch" },
-    { "name": "multi-arch" }
+    {
+      "name": "untagged-repo"
+    },
+    {
+      "name": "single-arch"
+    },
+    {
+      "name": "multi-arch"
+    }
   ],
   "tags": {
     "untagged-repo": [],
     "single-arch": [
-      { "tag": "latest", "digest": "sha256:aaa1111d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b" }
+      {
+        "tag": "latest",
+        "digest": "sha256:aaa1111d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
+      },
+      {
+        "tag": "latest-docker",
+        "digest": "sha256:aaa2222f8f4e53081737a42ed115g80250cbfcb3d9fd894cf5g29872g9g3cf7c"
+      }
     ],
     "multi-arch": [
-      { "tag": "latest", "digest": "sha256:bbb2222e5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e" }
+      {
+        "tag": "latest",
+        "digest": "sha256:bbb2222e5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e"
+      },
+      {
+        "tag": "latest-docker",
+        "digest": "sha256:bbb3333f6ef518394edfb9c11e6d48c7g6c5g9eag5f8b9g8f9e8f9g9f9g9f9g9f"
+      }
     ]
   },
   "manifests": {
     "sha256:aaa1111d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -31,8 +52,11 @@
             "size": 3374563
           }
         ]
-      },
-      "docker": {
+      }
+    },
+    "sha256:aaa2222f8f4e53081737a42ed115g80250cbfcb3d9fd894cf5g29872g9g3cf7c": {
+      "type": "docker",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
         "config": {
@@ -50,7 +74,8 @@
       }
     },
     "sha256:bbb2222e5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e": {
-      "oci-index": {
+      "type": "oci-index",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.index.v1+json",
         "manifests": [
@@ -73,8 +98,11 @@
             }
           }
         ]
-      },
-      "docker-list": {
+      }
+    },
+    "sha256:bbb3333f6ef518394edfb9c11e6d48c7g6c5g9eag5f8b9g8f9e8f9g9f9g9f9g9f": {
+      "type": "docker-list",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
         "manifests": [
@@ -100,7 +128,8 @@
       }
     },
     "sha256:eee5555a1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -111,22 +140,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb",
-            "size": 3400000
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:ggg7777e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c",
-          "size": 1500
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb",
             "size": 3400000
           }
@@ -134,7 +147,8 @@
       }
     },
     "sha256:fff6666b2372e7e5430816374042gb115afbcc3d9fd783ce5f38872f9f2be2f9": {
-      "oci": {
+      "type": "oci",
+      "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
@@ -145,22 +159,6 @@
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa",
-            "size": 3500000
-          }
-        ]
-      },
-      "docker": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-        "config": {
-          "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:iii9999f02b1e0b2dde0f64af9faccfceggc207e4g1979bg9c1d4f2faf7f6f8e1c",
-          "size": 1501
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
             "digest": "sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa",
             "size": 3500000
           }
@@ -173,37 +171,58 @@
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:ddd4444f20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"]
-      }
+        "diff_ids": [
+          "sha256:ddd4444f20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"
+        ]
+      },
+      "created": "2024-12-05T12:14:58.999Z"
     },
     "sha256:ggg7777e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c": {
       "architecture": "amd64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb"]
-      }
+        "diff_ids": [
+          "sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb"
+        ]
+      },
+      "created": "2025-04-20T10:43:58.567Z"
     },
     "sha256:iii9999f02b1e0b2dde0f64af9faccfceggc207e4g1979bg9c1d4f2faf7f6f8e1c": {
       "architecture": "arm64",
       "os": "linux",
       "config": {
-        "Env": ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-        "Cmd": ["/bin/sh"]
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": [
+          "/bin/sh"
+        ]
       },
       "rootfs": {
         "type": "layers",
-        "diff_ids": ["sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa"]
-      }
+        "diff_ids": [
+          "sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa"
+        ]
+      },
+      "created": "2025-09-05T02:38:44.809Z"
     }
   }
 }

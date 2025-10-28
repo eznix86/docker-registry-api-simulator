@@ -25,7 +25,26 @@ A Docker Registry HTTP API v2 simulator built with Bun, ElysiaJS, and lowdb. Imp
 - [Hurl](https://hurl.dev) (for tests)
 - Docker/Podman (optional)
 
-## Installation
+## Quick start
+
+```sh
+npx docker-api-simulator@latest --help
+
+# By default it looks in data/db.json
+npx docker-api-simulator@latest serve -f data/db-full.json
+
+# Generate database based on a template
+npx docker-api-simulator@latest generate templates/[name].[yaml|jsonc]
+
+# Validate database
+npx docker-api-simulator@latest validate db.json
+
+# Global install
+npm install -g docker-api-simulator@latest
+# You will get `registry-simulator`
+```
+
+## Installation on local
 
 ```bash
 bun install
@@ -39,7 +58,7 @@ Build the JavaScript bundle (for npm/bunx distribution):
 bun run build
 ```
 
-This creates a minified executable JavaScript file at `dist/index.js` (~1.2MB) that requires Bun to run.
+This creates a minified executable JavaScript file at `dist/index.js` that requires Bun to run.
 
 
 ## Docker

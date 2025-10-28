@@ -2,16 +2,23 @@
   "name": "distribution-api-simulator",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/js-yaml": "^4.0.9"
+    "@types/js-yaml": "^4.0.9",
+    "@types/yargs": "^17.0.34"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "private": true,
+  "bin": {
+    "registry-simulator": "./src/index.ts"
+  },
   "scripts": {
+    "start": "bun run src/index.ts",
+    "serve": "bun run src/index.ts serve",
+    "generate": "bun run src/index.ts generate",
+    "validate": "bun run src/index.ts validate",
     "dev": "bun run server.ts",
-    "check": "hurl --test tests/*.hurl",
-    "generate": "bun run generator.ts"
+    "check": "hurl --test tests/*.hurl"
   },
   "type": "module",
   "dependencies": {
@@ -21,6 +28,7 @@
     "js-yaml": "^4.1.0",
     "jsonc-parser": "^3.3.1",
     "lowdb": "^7.0.1",
-    "valibot": "^1.1.0"
+    "valibot": "^1.1.0",
+    "yargs": "^18.0.0"
   }
 }

@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia';
 import { swagger } from '@elysiajs/swagger';
 import { JSONFilePreset } from 'lowdb/node';
 import { createHash } from 'crypto';
-import { validateDatabase, validateSemantics } from './validator';
+import { validateDatabase, validateSemantics } from './src/utils/validator';
 
 interface Repository {
   name: string;

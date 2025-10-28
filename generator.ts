@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { resolve, extname } from 'path';
-import { load } from 'js-yaml';
-import { parse as parseJsonc } from 'jsonc-parser';
-import { createHash, randomUUID } from 'crypto';
-import { validateDatabase, validateSemantics } from './validator';
-import { faker } from '@faker-js/faker';
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { resolve, extname } from "path";
+import { load } from "js-yaml";
+import { parse as parseJsonc } from "jsonc-parser";
+import { createHash, randomUUID } from "crypto";
+import { validateDatabase, validateSemantics } from "./src/utils/validator";
+import { faker } from "@faker-js/faker";
 
 interface TemplateAuth {
   username: string;
@@ -14,7 +14,7 @@ interface TemplateAuth {
 interface TemplateRepository {
   name: string;
   tags: string[];
-  format?: 'oci' | 'docker';
+  format?: "oci" | "docker";
   multiarch?: boolean;
   architectures?: string[];
   os?: string;
@@ -25,16 +25,80 @@ interface Template {
   repositories: TemplateRepository[];
 }
 
+// OCI Image Config types
+interface ImageHistoryEntry {
+  created?: string;
+  created_by?: string;
+  comment?: string;
+  empty_layer?: boolean;
+}
+
+interface ImageConfig {
+  User?: string;
+  ExposedPorts?: Record<string, Record<string, never>>;
+  Env?: string[];
+  Entrypoint?: string[];
+  Cmd?: string[];
+  Volumes?: Record<string, Record<string, never>>;
+  WorkingDir?: string;
+  Labels?: Record<string, string>;
+  StopSignal?: string;
+}
+
+interface ImageRootFS {
+  type: string;
+  diff_ids: string[];
+}
+
+interface ConfigBlob {
+  architecture: string;
+  os: string;
+  created: string;
+  config: ImageConfig;
+  rootfs: ImageRootFS;
+  history: ImageHistoryEntry[];
+}
+
+interface ManifestData {
+  schemaVersion: number;
+  mediaType: string;
+  config?: {
+    mediaType: string;
+    digest: string;
+    size: number;
+  };
+  layers?: Array<{
+    mediaType: string;
+    digest: string;
+    size: number;
+  }>;
+  manifests?: Array<{
+    mediaType: string;
+    digest: string;
+    size: number;
+    platform: {
+      architecture: string;
+      os: string;
+    };
+  }>;
+}
+
 interface DatabaseSchema {
   auth: TemplateAuth[];
   repositories: { name: string }[];
   tags: Record<string, { tag: string; digest: string }[]>;
-  manifests: Record<string, any>;
-  blobs: Record<string, any>;
+  manifests: Record<
+    string,
+    {
+      type: "oci" | "docker" | "oci-index" | "docker-list";
+      data: ManifestData;
+    }
+  >;
+  blobs: Record<string, ConfigBlob>;
 }
 
 function computeDigest(content: string): string {
-  return 'sha256:' + createHash('sha256').update(content).digest('hex');
+  return "sha256:" + createHash("sha256").update(content).digest("hex");
 }
 
 function generateRandomSize(min: number, max: number): number {
@@ -48,7 +112,12 @@ function generateLayerBlob(): { digest: string; size: number } {
   return { digest, size };
 }
 
-function generateConfigBlob(arch: string, os: string, layerDigests: string[], repoName: string): any {
+function generateConfigBlob(
+  arch: string,
+  os: string,
+  layerDigests: string[],
+  repoName: string,
+): ConfigBlob {
   // Random date within last 365 days
   const now = faker.date.recent({ days: 365 }).toISOString();
 
@@ -61,78 +130,92 @@ function generateConfigBlob(arch: string, os: string, layerDigests: string[], re
       return {
         created: layerDate,
         created_by: `# ${os} base layer`,
-        comment: 'buildkit.dockerfile.v0'
+        comment: "buildkit.dockerfile.v0",
       };
     }
 
     const commands = [
-      'RUN /bin/sh -c apt-get update && apt-get install -y --no-install-recommends',
-      'COPY . /app',
-      'RUN /bin/sh -c mkdir -p /app',
-      'ENV NODE_VERSION=20.0.0',
-      'WORKDIR /app'
+      "RUN /bin/sh -c apt-get update && apt-get install -y --no-install-recommends",
+      "COPY . /app",
+      "RUN /bin/sh -c mkdir -p /app",
+      "ENV NODE_VERSION=20.0.0",
+      "WORKDIR /app",
     ];
 
     return {
       created: layerDate,
       created_by: commands[index % commands.length],
-      comment: 'buildkit.dockerfile.v0',
-      empty_layer: Math.random() > 0.7
+      comment: "buildkit.dockerfile.v0",
+      empty_layer: Math.random() > 0.7,
     };
   });
 
   const version = faker.system.semver();
   const description = faker.lorem.sentence();
 
-  const config = {
+  const config: ConfigBlob = {
     architecture: arch,
     os: os,
     created: now,
     config: {
       Env: [
-        'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
         `APP_VERSION=${version}`,
-        `APP_NAME=${repoName}`
+        `APP_NAME=${repoName}`,
       ],
-      Cmd: ['/bin/sh', '-c', `${repoName}`],
-      WorkingDir: '/app',
+      Cmd: ["/bin/sh", "-c", `${repoName}`],
+      WorkingDir: "/app",
       Labels: {
-        'org.opencontainers.image.created': now,
-        'org.opencontainers.image.title': repoName,
-        'org.opencontainers.image.description': description,
-        'org.opencontainers.image.source': `https://github.com/${faker.internet.username()}/${repoName}`,
-        'org.opencontainers.image.version': version,
-        'org.opencontainers.image.licenses': faker.helpers.arrayElement(['Apache-2.0', 'MIT', 'BSD-3-Clause', 'GPL-3.0', 'ISC'])
+        "org.opencontainers.image.created": now,
+        "org.opencontainers.image.title": repoName,
+        "org.opencontainers.image.description": description,
+        "org.opencontainers.image.source": `https://github.com/${faker.internet.username()}/${repoName}`,
+        "org.opencontainers.image.version": version,
+        "org.opencontainers.image.licenses": faker.helpers.arrayElement([
+          "Apache-2.0",
+          "MIT",
+          "BSD-3-Clause",
+          "GPL-3.0",
+          "ISC",
+        ]),
       },
-      StopSignal: 'SIGTERM'
+      StopSignal: "SIGTERM",
     },
     rootfs: {
-      type: 'layers',
-      diff_ids: layerDigests
+      type: "layers",
+      diff_ids: layerDigests,
     },
-    history
+    history,
   };
 
   // Add optional fields for certain cases
-  if (repoName === 'postgres' || repoName === 'redis' || repoName === 'nginx') {
-    config.config.User = '999';
+  if (repoName === "postgres" || repoName === "redis" || repoName === "nginx") {
+    config.config.User = "999";
     config.config.ExposedPorts = {
-      [`${repoName === 'postgres' ? '5432' : repoName === 'redis' ? '6379' : '80'}/tcp`]: {}
+      [`${repoName === "postgres" ? "5432" : repoName === "redis" ? "6379" : "80"}/tcp`]:
+        {},
     };
 
-    if (repoName === 'postgres') {
-      config.config.Env.push('POSTGRES_VERSION=16', 'PGDATA=/var/lib/postgresql/data');
-      config.config.Volumes = { '/var/lib/postgresql/data': {} };
-      config.config.Entrypoint = ['docker-entrypoint.sh'];
-      config.config.Cmd = ['postgres'];
-    } else if (repoName === 'redis') {
-      config.config.Env.push('REDIS_VERSION=7.2');
-      config.config.Volumes = { '/data': {} };
-      config.config.Cmd = ['redis-server'];
-    } else if (repoName === 'nginx') {
-      config.config.Env.push('NGINX_VERSION=1.25.3');
-      config.config.Cmd = ['nginx', '-g', 'daemon off;'];
-      config.config.StopSignal = 'SIGQUIT';
+    if (repoName === "postgres") {
+      config.config.Env = [
+        ...(config.config.Env ?? []),
+        "POSTGRES_VERSION=16",
+        "PGDATA=/var/lib/postgresql/data",
+      ];
+      config.config.Volumes = { "/var/lib/postgresql/data": {} };
+      config.config.Entrypoint = ["docker-entrypoint.sh"];
+      config.config.Cmd = ["postgres"];
+    } else if (repoName === "redis") {
+      config.config.Env = [...(config.config.Env ?? []), "REDIS_VERSION=7.2"];
+      config.config.Volumes = { "/data": {} };
+      config.config.Cmd = ["redis-server"];
+    } else if (repoName === "nginx") {
+      config.config.Env = [
+        ...(config.config.Env ?? []),
+        "NGINX_VERSION=1.25.3",
+      ];
+      config.config.Cmd = ["nginx", "-g", "daemon off;"];
+      config.config.StopSignal = "SIGQUIT";
     }
   }
 
@@ -140,59 +223,68 @@ function generateConfigBlob(arch: string, os: string, layerDigests: string[], re
 }
 
 function generateManifest(
-  format: 'oci' | 'docker',
+  format: "oci" | "docker",
   configDigest: string,
   configSize: number,
-  layers: Array<{ digest: string; size: number }>
-): any {
-  const mediaTypePrefix = format === 'oci'
-    ? 'application/vnd.oci.image'
-    : 'application/vnd.docker.distribution';
+  layers: Array<{ digest: string; size: number }>,
+): ManifestData {
+  const mediaTypePrefix =
+    format === "oci"
+      ? "application/vnd.oci.image"
+      : "application/vnd.docker.distribution";
 
   return {
     schemaVersion: 2,
-    mediaType: format === 'oci'
-      ? `${mediaTypePrefix}.manifest.v1+json`
-      : `${mediaTypePrefix}.manifest.v2+json`,
+    mediaType:
+      format === "oci"
+        ? `${mediaTypePrefix}.manifest.v1+json`
+        : `${mediaTypePrefix}.manifest.v2+json`,
     config: {
-      mediaType: format === 'oci'
-        ? `${mediaTypePrefix}.config.v1+json`
-        : 'application/vnd.docker.container.image.v1+json',
+      mediaType:
+        format === "oci"
+          ? `${mediaTypePrefix}.config.v1+json`
+          : "application/vnd.docker.container.image.v1+json",
       digest: configDigest,
-      size: configSize
+      size: configSize,
     },
-    layers: layers.map(layer => ({
-      mediaType: format === 'oci'
-        ? `${mediaTypePrefix}.layer.v1.tar+gzip`
-        : 'application/vnd.docker.image.rootfs.diff.tar.gzip',
+    layers: layers.map((layer) => ({
+      mediaType:
+        format === "oci"
+          ? `${mediaTypePrefix}.layer.v1.tar+gzip`
+          : "application/vnd.docker.image.rootfs.diff.tar.gzip",
       digest: layer.digest,
-      size: layer.size
-    }))
+      size: layer.size,
+    })),
   };
 }
 
 function generateManifestIndex(
-  format: 'oci' | 'docker',
-  platformManifests: Array<{ digest: string; size: number; arch: string; os: string }>
-): any {
-  const isOci = format === 'oci';
+  format: "oci" | "docker",
+  platformManifests: Array<{
+    digest: string;
+    size: number;
+    arch: string;
+    os: string;
+  }>,
+): ManifestData {
+  const isOci = format === "oci";
 
   return {
     schemaVersion: 2,
     mediaType: isOci
-      ? 'application/vnd.oci.image.index.v1+json'
-      : 'application/vnd.docker.distribution.manifest.list.v2+json',
-    manifests: platformManifests.map(pm => ({
+      ? "application/vnd.oci.image.index.v1+json"
+      : "application/vnd.docker.distribution.manifest.list.v2+json",
+    manifests: platformManifests.map((pm) => ({
       mediaType: isOci
-        ? 'application/vnd.oci.image.manifest.v1+json'
-        : 'application/vnd.docker.distribution.manifest.v2+json',
+        ? "application/vnd.oci.image.manifest.v1+json"
+        : "application/vnd.docker.distribution.manifest.v2+json",
       digest: pm.digest,
       size: pm.size,
       platform: {
         architecture: pm.arch,
-        os: pm.os
-      }
-    }))
+        os: pm.os,
+      },
+    })),
   };
 }
 
@@ -202,14 +294,14 @@ function generateDatabase(template: Template): DatabaseSchema {
     repositories: [],
     tags: {},
     manifests: {},
-    blobs: {}
+    blobs: {},
   };
 
   for (const repo of template.repositories) {
-    const format = repo.format || 'oci';
-    const os = repo.os || 'linux';
+    const format = repo.format || "oci";
+    const os = repo.os || "linux";
     const multiarch = repo.multiarch || false;
-    const architectures = repo.architectures || ['amd64', 'arm64'];
+    const architectures = repo.architectures || ["amd64", "arm64"];
 
     // Add repository
     database.repositories.push({ name: repo.name });
@@ -218,7 +310,12 @@ function generateDatabase(template: Template): DatabaseSchema {
     for (const tag of repo.tags) {
       if (multiarch) {
         // Generate multi-arch manifest (index/list)
-        const platformManifests: Array<{ digest: string; size: number; arch: string; os: string }> = [];
+        const platformManifests: Array<{
+          digest: string;
+          size: number;
+          arch: string;
+          os: string;
+        }> = [];
 
         for (const arch of architectures) {
           // Generate layers for this platform
@@ -233,7 +330,12 @@ function generateDatabase(template: Template): DatabaseSchema {
           }
 
           // Generate config blob
-          const configBlob = generateConfigBlob(arch, os, layerDigests, repo.name);
+          const configBlob = generateConfigBlob(
+            arch,
+            os,
+            layerDigests,
+            repo.name,
+          );
           const configJson = JSON.stringify(configBlob);
           const configDigest = computeDigest(configJson);
           const configSize = Buffer.byteLength(configJson);
@@ -242,7 +344,12 @@ function generateDatabase(template: Template): DatabaseSchema {
           database.blobs[configDigest] = configBlob;
 
           // Generate manifest for this platform
-          const manifest = generateManifest(format, configDigest, configSize, layers);
+          const manifest = generateManifest(
+            format,
+            configDigest,
+            configSize,
+            layers,
+          );
           const manifestJson = JSON.stringify(manifest);
           const manifestDigest = computeDigest(manifestJson);
           const manifestSize = Buffer.byteLength(manifestJson);
@@ -250,14 +357,14 @@ function generateDatabase(template: Template): DatabaseSchema {
           // Store manifest
           database.manifests[manifestDigest] = {
             type: format,
-            data: manifest
+            data: manifest,
           };
 
           platformManifests.push({
             digest: manifestDigest,
             size: manifestSize,
             arch,
-            os
+            os,
           });
         }
 
@@ -268,19 +375,18 @@ function generateDatabase(template: Template): DatabaseSchema {
 
         // Store manifest index
         database.manifests[indexDigest] = {
-          type: format === 'oci' ? 'oci-index' : 'docker-list',
-          data: index
+          type: format === "oci" ? "oci-index" : "docker-list",
+          data: index,
         };
 
         // Add tag pointing to index
-        database.tags[repo.name].push({
+        database.tags[repo.name]!.push({
           tag,
-          digest: indexDigest
+          digest: indexDigest,
         });
-
       } else {
         // Generate single-arch manifest
-        const arch = architectures[0] || 'amd64';
+        const arch = architectures[0] || "amd64";
 
         // Generate layers
         const layerCount = generateRandomSize(1, 5);
@@ -294,7 +400,12 @@ function generateDatabase(template: Template): DatabaseSchema {
         }
 
         // Generate config blob
-        const configBlob = generateConfigBlob(arch, os, layerDigests, repo.name);
+        const configBlob = generateConfigBlob(
+          arch,
+          os,
+          layerDigests,
+          repo.name,
+        );
         const configJson = JSON.stringify(configBlob);
         const configDigest = computeDigest(configJson);
         const configSize = Buffer.byteLength(configJson);
@@ -303,20 +414,25 @@ function generateDatabase(template: Template): DatabaseSchema {
         database.blobs[configDigest] = configBlob;
 
         // Generate manifest
-        const manifest = generateManifest(format, configDigest, configSize, layers);
+        const manifest = generateManifest(
+          format,
+          configDigest,
+          configSize,
+          layers,
+        );
         const manifestJson = JSON.stringify(manifest);
         const manifestDigest = computeDigest(manifestJson);
 
         // Store manifest
         database.manifests[manifestDigest] = {
           type: format,
-          data: manifest
+          data: manifest,
         };
 
         // Add tag
-        database.tags[repo.name].push({
+        database.tags[repo.name]!.push({
           tag,
-          digest: manifestDigest
+          digest: manifestDigest,
         });
       }
     }
@@ -329,9 +445,9 @@ function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: bun run generator.ts <template.yaml|template.jsonc>');
-    console.error('Example: bun run generator.ts templates/example.yaml');
-    console.error('Example: bun run generator.ts templates/example.jsonc');
+    console.error("Usage: bun run generator.ts <template.yaml|template.jsonc>");
+    console.error("Example: bun run generator.ts templates/example.yaml");
+    console.error("Example: bun run generator.ts templates/example.jsonc");
     process.exit(1);
   }
 
@@ -341,17 +457,19 @@ function main() {
   try {
     // Read and parse template (YAML or JSONC)
     console.log(`Reading template from: ${templatePath}`);
-    const templateContent = readFileSync(templatePath, 'utf-8');
+    const templateContent = readFileSync(templatePath, "utf-8");
 
     let template: Template;
-    if (fileExtension === '.json' || fileExtension === '.jsonc') {
+    if (fileExtension === ".json" || fileExtension === ".jsonc") {
       // Parse JSONC (JSON with comments)
       template = parseJsonc(templateContent) as Template;
-    } else if (fileExtension === '.yaml' || fileExtension === '.yml') {
+    } else if (fileExtension === ".yaml" || fileExtension === ".yml") {
       // Parse YAML
       template = load(templateContent) as Template;
     } else {
-      throw new Error(`Unsupported file format: ${fileExtension}. Use .yaml, .yml, .json, or .jsonc`);
+      throw new Error(
+        `Unsupported file format: ${fileExtension}. Use .yaml, .yml, .json, or .jsonc`,
+      );
     }
 
     // Validate template structure
@@ -361,36 +479,37 @@ function main() {
 
     console.log(`Generating database from template...`);
     console.log(`  Repositories: ${template.repositories.length}`);
-    console.log(`  Authentication: ${template.auth ? 'enabled' : 'disabled'}`);
+    console.log(`  Authentication: ${template.auth ? "enabled" : "disabled"}`);
 
     // Generate database
     const database = generateDatabase(template);
 
     // Validate database
-    console.log('\nValidating generated database...');
+    console.log("\nValidating generated database...");
     validateDatabase(database);
     validateSemantics(database);
 
     // Generate output filename
     const uuid = randomUUID();
-    const outputDir = resolve('data');
+    const outputDir = resolve("data");
     const outputPath = resolve(outputDir, `${uuid}.json`);
 
     // Ensure data directory exists
     mkdirSync(outputDir, { recursive: true });
 
     // Write to file
-    writeFileSync(outputPath, JSON.stringify(database, null, 2), 'utf-8');
+    writeFileSync(outputPath, JSON.stringify(database, null, 2), "utf-8");
 
     console.log(`\n✓ Successfully generated database!`);
     console.log(`  Output: ${outputPath}`);
     console.log(`  Repositories: ${database.repositories.length}`);
-    console.log(`  Total tags: ${Object.values(database.tags).reduce((sum, tags) => sum + tags.length, 0)}`);
+    console.log(
+      `  Total tags: ${Object.values(database.tags).reduce((sum, tags) => sum + tags.length, 0)}`,
+    );
     console.log(`  Manifests: ${Object.keys(database.manifests).length}`);
     console.log(`  Blobs: ${Object.keys(database.blobs).length}`);
-
   } catch (error) {
-    console.error('\n✗ Generation failed:');
+    console.error("\n✗ Generation failed:");
     if (error instanceof Error) {
       console.error(`  ${error.message}`);
     } else {

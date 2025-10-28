@@ -11,40 +11,16 @@ changelog:
 
   categories:
     - title: Features
-      labels:
-        - feature
-        - enhancement
-        - feat
-
+      labels: [feature, enhancement, feat]
     - title: Bug Fixes
-      labels:
-        - bug
-        - fix
-        - bugfix
-
+      labels: [bug, fix, bugfix]
     - title: Documentation
-      labels:
-        - documentation
-        - docs
-        - doc
-
+      labels: [documentation, docs, doc]
     - title: Tests
-      labels:
-        - test
-        - tests
-
+      labels: [test, tests]
     - title: Performance
-      labels:
-        - performance
-        - perf
-
+      labels: [performance, perf]
     - title: Maintenance
-      labels:
-        - chore
-        - refactor
-        - ci
-        - build
-
+      labels: [chore, refactor, ci, build]
     - title: Other Changes
-      labels:
-        - "*"
+      labels: ["*"]

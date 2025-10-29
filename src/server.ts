@@ -3,6 +3,7 @@ import { swagger } from "@elysiajs/swagger";
 import { JSONFilePreset } from "lowdb/node";
 import { createHash } from "crypto";
 import { validateDatabase, validateSemantics } from "./utils/validator";
+import { generateDatabase } from "./generator";
 import chalk from "chalk";
 
 const log = console.log;
@@ -32,6 +33,17 @@ interface DatabaseSchema {
   tags: Record<string, Tag[]>;
   manifests: Record<string, Manifest>;
   blobs: Record<string, any>;
+}
+
+interface PushTemplate {
+  repositories: Array<{
+    name: string;
+    tags: string[];
+    format?: "oci" | "docker";
+    multiarch?: boolean;
+    architectures?: string[];
+    os?: string;
+  }>;
 }
 
 function computeDigest(content: string): string {
@@ -120,6 +132,19 @@ function registryError(code: string, message: string, status = 404) {
       "Docker-Distribution-API-Version": "registry/2.0",
     },
   });
+}
+
+function findOrphanedBlobs(manifests: Record<string, Manifest>): Set<string> {
+  const referencedBlobs = new Set<string>();
+
+  // Collect all config digests from all manifests
+  for (const manifestEntry of Object.values(manifests)) {
+    if (manifestEntry.data.config?.digest) {
+      referencedBlobs.add(manifestEntry.data.config.digest);
+    }
+  }
+
+  return referencedBlobs;
 }
 
 export async function createServer(dbFile: string, port: number) {
@@ -565,6 +590,120 @@ export async function createServer(dbFile: string, port: number) {
           summary: "Check blob existence",
           description: "Check if config blob exists and get metadata",
           tags: ["blobs"],
+        },
+      },
+    )
+
+    .post(
+      "/v2/push",
+      async ({ body, set }) => {
+        try {
+          await generateDatabase(body, db);
+          await db.write();
+
+          set.status = 201;
+          return {
+            message: "Successfully added repositories to registry",
+          };
+        } catch (error) {
+          return registryError(
+            "INVALID_REQUEST",
+            error instanceof Error ? error.message : "Invalid request",
+            400,
+          );
+        }
+      },
+      {
+        body: t.Object({
+          repositories: t.Array(
+            t.Object({
+              name: t.String(),
+              tags: t.Array(t.String()),
+              format: t.Optional(t.Union([t.Literal("oci"), t.Literal("docker")])),
+              multiarch: t.Optional(t.Boolean()),
+              architectures: t.Optional(t.Array(t.String())),
+              os: t.Optional(t.String()),
+            }),
+          ),
+        }),
+        detail: {
+          summary: "Push new repositories",
+          description: "Add new repositories, tags, manifests, and blobs to the registry",
+          tags: ["manifests"],
+        },
+      },
+    )
+
+    .delete(
+      "/v2/:name/manifests/:reference",
+      async ({ params, headers, set }) => {
+        const { name, reference } = params;
+        const accept =
+          headers.accept ||
+          "application/vnd.docker.distribution.manifest.v2+json";
+
+        const repoExists = db.data.repositories.some((r) => r.name === name);
+        if (!repoExists) {
+          return registryError("NAME_UNKNOWN", "repository not found", 404);
+        }
+
+        // Resolve reference to digest
+        let digest = reference;
+        if (!reference.startsWith("sha256:")) {
+          const tagEntry = (db.data.tags[name] || []).find(
+            (t: any) => t.tag === reference,
+          );
+          if (!tagEntry) {
+            return registryError("MANIFEST_UNKNOWN", "manifest not found", 404);
+          }
+          digest = tagEntry.digest;
+        }
+
+        const manifestEntry = db.data.manifests[digest];
+        if (!manifestEntry) {
+          return registryError("MANIFEST_UNKNOWN", "manifest not found", 404);
+        }
+
+        const selected = selectManifestFormat(accept, manifestEntry);
+        if (!selected) {
+          return registryError(
+            "UNSUPPORTED",
+            "requested media type not supported or not available",
+            406,
+          );
+        }
+
+        delete db.data.manifests[digest];
+
+        if (db.data.tags[name]) {
+          db.data.tags[name] = db.data.tags[name]!.filter(
+            (t) => t.digest !== digest,
+          );
+        }
+
+        const referencedBlobs = findOrphanedBlobs(db.data.manifests);
+        const allBlobs = Object.keys(db.data.blobs);
+        for (const blobDigest of allBlobs) {
+          if (!referencedBlobs.has(blobDigest)) {
+            delete db.data.blobs[blobDigest];
+          }
+        }
+
+        await db.write();
+
+        set.status = 202;
+        return new Response(null, { status: 202 });
+      },
+      {
+        params: t.Object({
+          name: t.String(),
+          reference: t.String(),
+        }),
+        detail: {
+          summary: "Delete manifest",
+          description:
+            "Delete manifest or manifest list by tag or digest. Automatically cleans up orphaned blobs.",
+          tags: ["manifests"],
         },
       },
     );

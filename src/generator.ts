@@ -287,7 +287,7 @@ function generateManifestIndex(
   };
 }
 
-async function generateDatabase(
+export async function generateDatabase(
   template: Template,
   db: any,
 ): Promise<void> {

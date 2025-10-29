@@ -619,7 +619,9 @@ export async function createServer(dbFile: string, port: number) {
             t.Object({
               name: t.String(),
               tags: t.Array(t.String()),
-              format: t.Optional(t.Union([t.Literal("oci"), t.Literal("docker")])),
+              format: t.Optional(
+                t.Union([t.Literal("oci"), t.Literal("docker")]),
+              ),
               multiarch: t.Optional(t.Boolean()),
               architectures: t.Optional(t.Array(t.String())),
               os: t.Optional(t.String()),
@@ -628,8 +630,9 @@ export async function createServer(dbFile: string, port: number) {
         }),
         detail: {
           summary: "Push new repositories",
-          description: "Add new repositories, tags, manifests, and blobs to the registry",
-          tags: ["manifests"],
+          description:
+            "Add new repositories, tags, manifests, and blobs to the registry",
+          tags: ["catalog"],
         },
       },
     )

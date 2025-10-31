@@ -1,7 +1,7 @@
 {
 	"name": "docker-api-simulator",
 	"type": "module",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"private": false,
 	"description": "Docker Registry HTTP API v2 simulator for testing and development",
 	"author": "Bruno Bernard",

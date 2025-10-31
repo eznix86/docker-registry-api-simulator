@@ -1,31 +1,31 @@
 {
-  "$schema": "../template.schema.json",
-  "auth": [
-    {
-      "username": "admin",
-      "password": "admin123"
-    },
-    {
-      "username": "user",
-      "password": "user123"
-    }
-  ],
-  "repositories": [
-    {
-      "name": "alpine",
-      "tags": ["latest", "3.18", "3.17"]
-    },
-    {
-      "name": "nginx",
-      "tags": ["latest", "1.25"]
-    },
-    {
-      "name": "redis",
-      "tags": ["latest", "7.2"]
-    },
-    {
-      "name": "postgres",
-      "tags": ["latest", "16"]
-    }
-  ]
+	"$schema": "../template.schema.json",
+	"auth": [
+		{
+			"username": "admin",
+			"password": "admin123"
+		},
+		{
+			"username": "user",
+			"password": "user123"
+		}
+	],
+	"repositories": [
+		{
+			"name": "alpine",
+			"tags": ["latest", "3.18", "3.17"]
+		},
+		{
+			"name": "nginx",
+			"tags": ["latest", "1.25"]
+		},
+		{
+			"name": "redis",
+			"tags": ["latest", "7.2"]
+		},
+		{
+			"name": "postgres",
+			"tags": ["latest", "16"]
+		}
+	]
 }

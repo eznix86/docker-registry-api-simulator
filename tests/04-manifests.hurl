@@ -24,13 +24,13 @@ header "Content-Type" contains "application/vnd.oci.image.manifest.v1+json"
 jsonpath "$.mediaType" == "application/vnd.oci.image.manifest.v1+json"
 
 # Test manifest GET by digest
-GET http://localhost:5001/v2/alpine/manifests/sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b
+GET http://localhost:5001/v2/alpine/manifests/sha256:1d47232169609e18b3bc64051bea9810984c6303662c0207868e7f851d2e10e3
 Authorization: Basic YWRtaW46YWRtaW4xMjM=
 Accept: application/vnd.docker.distribution.manifest.v2+json
 
 HTTP 200
 [Asserts]
-header "Docker-Content-Digest" == "sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
+header "Docker-Content-Digest" == "sha256:1d47232169609e18b3bc64051bea9810984c6303662c0207868e7f851d2e10e3"
 
 # Test manifest HEAD
 HEAD http://localhost:5001/v2/alpine/manifests/latest

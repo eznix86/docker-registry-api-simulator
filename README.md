@@ -60,7 +60,6 @@ bun run build
 
 This creates a minified executable JavaScript file at `dist/index.js` that requires Bun to run.
 
-
 ## Docker
 
 The Containerfile uses a multi-stage build to create an optimized ~100MB image.
@@ -185,10 +184,10 @@ Basic authentication is supported. Add users to the `auth` array in your JSON co
 
 ```json
 {
-  "auth": [
-    { "username": "admin", "password": "admin123" },
-    { "username": "user", "password": "user123" }
-  ]
+	"auth": [
+		{ "username": "admin", "password": "admin123" },
+		{ "username": "user", "password": "user123" }
+	]
 }
 ```
 

@@ -1,113 +1,113 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/eznix86/docker-registry-api-simulator/main/database.schema.json",
-  "title": "Docker Registry Database",
-  "description": "Schema for Docker Registry API v2 database files",
-  "type": "object",
-  "properties": {
-    "auth": {
-      "description": "Authentication credentials (can be empty array)",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Username for authentication"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Password for authentication"
-          }
-        },
-        "required": ["username", "password"],
-        "additionalProperties": false
-      }
-    },
-    "repositories": {
-      "description": "List of repositories",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Repository name (lowercase alphanumeric with optional separators and namespaces)",
-            "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*$",
-            "minLength": 1
-          }
-        },
-        "required": ["name"],
-        "additionalProperties": false
-      }
-    },
-    "tags": {
-      "description": "Tags mapped by repository name",
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "tag": {
-              "type": "string",
-              "minLength": 1
-            },
-            "digest": {
-              "type": "string",
-              "pattern": "^sha256:[a-f0-9]{64}$"
-            }
-          },
-          "required": ["tag", "digest"],
-          "additionalProperties": false
-        }
-      }
-    },
-    "manifests": {
-      "description": "Manifests mapped by digest",
-      "type": "object",
-      "patternProperties": {
-        "^sha256:[a-f0-9]{64}$": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": ["oci", "docker", "oci-index", "docker-list"]
-            },
-            "data": {
-              "type": "object",
-              "properties": {
-                "schemaVersion": {
-                  "type": "integer",
-                  "minimum": 2
-                },
-                "mediaType": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "required": ["schemaVersion", "mediaType"]
-            }
-          },
-          "required": ["type", "data"],
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "blobs": {
-      "description": "Blobs (config) mapped by digest",
-      "type": "object",
-      "patternProperties": {
-        "^sha256:[a-f0-9]{64}$": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false
-    }
-  },
-  "required": ["auth", "repositories", "tags", "manifests", "blobs"],
-  "additionalProperties": false
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://raw.githubusercontent.com/eznix86/docker-registry-api-simulator/main/database.schema.json",
+	"title": "Docker Registry Database",
+	"description": "Schema for Docker Registry API v2 database files",
+	"type": "object",
+	"properties": {
+		"auth": {
+			"description": "Authentication credentials (can be empty array)",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"username": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Username for authentication"
+					},
+					"password": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Password for authentication"
+					}
+				},
+				"required": ["username", "password"],
+				"additionalProperties": false
+			}
+		},
+		"repositories": {
+			"description": "List of repositories",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Repository name (lowercase alphanumeric with optional separators and namespaces)",
+						"pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*$",
+						"minLength": 1
+					}
+				},
+				"required": ["name"],
+				"additionalProperties": false
+			}
+		},
+		"tags": {
+			"description": "Tags mapped by repository name",
+			"type": "object",
+			"additionalProperties": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"tag": {
+							"type": "string",
+							"minLength": 1
+						},
+						"digest": {
+							"type": "string",
+							"pattern": "^sha256:[a-f0-9]{64}$"
+						}
+					},
+					"required": ["tag", "digest"],
+					"additionalProperties": false
+				}
+			}
+		},
+		"manifests": {
+			"description": "Manifests mapped by digest",
+			"type": "object",
+			"patternProperties": {
+				"^sha256:[a-f0-9]{64}$": {
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["oci", "docker", "oci-index", "docker-list"]
+						},
+						"data": {
+							"type": "object",
+							"properties": {
+								"schemaVersion": {
+									"type": "integer",
+									"minimum": 2
+								},
+								"mediaType": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"required": ["schemaVersion", "mediaType"]
+						}
+					},
+					"required": ["type", "data"],
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
+		"blobs": {
+			"description": "Blobs (config) mapped by digest",
+			"type": "object",
+			"patternProperties": {
+				"^sha256:[a-f0-9]{64}$": {
+					"type": "object"
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"required": ["auth", "repositories", "tags", "manifests", "blobs"],
+	"additionalProperties": false
 }

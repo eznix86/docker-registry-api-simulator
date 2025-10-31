@@ -1,65 +1,65 @@
 {
-  "$schema": "../template.schema.json",
+	"$schema": "../template.schema.json",
 
-  // Optional: Authentication credentials
-  // Omit this section for no authentication
-  "auth": [
-    {
-      "username": "admin",
-      "password": "admin123"
-    },
-    {
-      "username": "user",
-      "password": "user123"
-    }
-  ],
+	// Optional: Authentication credentials
+	// Omit this section for no authentication
+	"auth": [
+		{
+			"username": "admin",
+			"password": "admin123"
+		},
+		{
+			"username": "user",
+			"password": "user123"
+		}
+	],
 
-  // Repositories with their tags and optional configuration
-  "repositories": [
-    // Simple repository with default settings (OCI format, single-arch amd64)
-    {
-      "name": "library/alpine",
-      "tags": ["latest", "3.18", "3.17"]
-    },
+	// Repositories with their tags and optional configuration
+	"repositories": [
+		// Simple repository with default settings (OCI format, single-arch amd64)
+		{
+			"name": "library/alpine",
+			"tags": ["latest", "3.18", "3.17"]
+		},
 
-    // Repository with Docker format instead of OCI
-    {
-      "name": "nginx",
-      "format": "docker",
-      "tags": ["latest", "1.25"]
-    },
+		// Repository with Docker format instead of OCI
+		{
+			"name": "nginx",
+			"format": "docker",
+			"tags": ["latest", "1.25"]
+		},
 
-    // Repository with custom OS
-    {
-      "name": "postgres",
-      "os": "linux",
-      "tags": ["latest", "16", "15"]
-    },
+		// Repository with custom OS
+		{
+			"name": "postgres",
+			"os": "linux",
+			"tags": ["latest", "16", "15"]
+		},
 
-    // Multi-architecture repository (default: amd64 + arm64)
-    {
-      "name": "redis",
-      "multiarch": true,
-      "tags": ["latest", "7.2"]
-    },
+		// Multi-architecture repository (default: amd64 + arm64)
+		{
+			"name": "redis",
+			"multiarch": true,
+			"tags": ["latest", "7.2"]
+		},
 
-    // Multi-architecture with custom architectures
-    {
-      "name": "myapp",
-      "multiarch": true,
-      "architectures": ["amd64", "arm64", "arm"],
-      "tags": ["latest", "v1.0.0", "v1.0.1"]
-    },
+		// Multi-architecture with custom architectures
+		{
+			"name": "myapp",
+			"multiarch": true,
+			"architectures": ["amd64", "arm64", "arm"],
+			"tags": ["latest", "v1.0.0", "v1.0.1"]
+		},
 
-    // Multi-architecture with Docker format
-    {
-      "name": "customapp",
-      "format": "docker",
-      "multiarch": true,
-      "architectures": ["amd64", "arm64"],
-      "tags": ["latest"]
-    }
-  ]
+		// Multi-architecture with Docker format
+		{
+			"name": "customapp",
+			"format": "docker",
+			"multiarch": true,
+			"architectures": ["amd64", "arm64"],
+			"tags": ["latest"]
+		}
+	]
 }
 
 /*

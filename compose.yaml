@@ -29,5 +29,5 @@ services:
     ports:
       - "5003:5001"
     volumes:
-      - ./data/abd71fc0-d698-42c8-bcbd-00e2d7657e3c.json:/data/db.json:ro
+      - ./data/db-big.json:/data/db.json:ro
     restart: unless-stopped

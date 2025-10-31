@@ -13,9 +13,6 @@ import type {
   Template,
   ConfigBlob,
   ManifestData,
-  ImageConfig,
-  ImageRootFS,
-  ImageHistoryEntry
 } from "~/types";
 import { DEFAULT_DATABASE } from "~/constants";
 

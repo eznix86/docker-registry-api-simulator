@@ -41,7 +41,7 @@ npx docker-api-simulator@latest validate db.json
 
 # Global install
 npm install -g docker-api-simulator@latest
-# You will get `registry-simulator`
+# You will get `registry-api-simulator`
 ```
 
 ## Installation on local
@@ -71,10 +71,10 @@ Build and run with Docker Compose:
 docker compose up -d
 ```
 
-Three instances will start:
+Three instances will start with 250ms simulated network throttle:
 - registry-full (port 5001) - 4 repositories (data/db-full.json)
 - registry-minimal (port 5002) - 1 repository (data/db-minimal.json)
-- registry-custom (port 5003) - customizable (data/db-custom.json)
+- registry-custom (port 5003) - 50 repositories (data/db-big.json)
 
 Or build a single image:
 
@@ -85,15 +85,16 @@ docker run -p 5001:5001 -v ./data/db.json:/data/db.json:ro registry-simulator
 
 ## Usage
 
-The simulator provides three commands:
+The simulator provides four commands:
 
 ### Start the server
 
 ```bash
-bun run serve                           # uses data/db.json on port 5001
-bun run serve -f data/db-full.json      # use specific database
-bun run serve -p 3000                   # use custom port
-bun run serve -f data/db-custom.json -p 3000  # both options
+bun run serve                                    # uses data/db.json on port 5001
+bun run serve -f data/db-full.json               # use specific database
+bun run serve -p 3000                            # use custom port
+bun run serve -t 250                             # add 250ms to response delay
+bun run serve -f data/db-custom.json -p 3000 -t  # throttle with default 250ms
 ```
 
 Server runs on http://localhost:5001 by default.
@@ -102,14 +103,38 @@ Endpoints:
 - Health: http://localhost:5001/v2/
 - Swagger: http://localhost:5001/swagger
 
+Options:
+- `-f, --db-file <path>` - Path to the database JSON file (default: "data/db.json")
+- `-p, --port <number>` - Port to listen on (default: "5001")
+- `-t, --throttle [ms]` - Add response delay (default: 250ms if flag used without value)
+
 ### Generate a database from template
 
 ```bash
-bun run generate templates/example.yaml    # generates from YAML template
-bun run generate templates/example.jsonc   # or from JSONC template
+bun run generate templates/example.yaml             # generates from YAML template
+bun run generate templates/example.jsonc            # or from JSONC template
+bun run generate templates/example.jsonc -o data/custom.json  # custom output path
 ```
 
-The generated database will be saved in the `data/` directory with a unique UUID filename.
+The generated database will be saved in the `data/` directory with a unique UUID filename, or at the specified output path.
+
+Options:
+- `-o, --output <file>` - Output database file path (default: data/[uuid].json)
+
+### Generate a template file
+
+```bash
+bun run generate-template                      # generates 100 repos, 1001 tags
+bun run generate-template -r 50 -t 200         # custom counts
+bun run generate-template -a                   # include authentication
+bun run generate-template -o templates/my.jsonc  # custom output path
+```
+
+Options:
+- `-r, --repos <number>` - Number of repositories (default: "100")
+- `-t, --tags <number>` - Total number of tags (default: "1001")
+- `-o, --output <path>` - Output file path (default: templates/[uuid].jsonc)
+- `-a, --auth` - Include authentication credentials
 
 ### Validate a database file
 

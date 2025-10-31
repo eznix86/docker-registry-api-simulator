@@ -1,5 +1,3 @@
-// Shared type definitions for the Docker Registry API simulator
-
 export interface AuthEntry {
   username: string;
   password: string;

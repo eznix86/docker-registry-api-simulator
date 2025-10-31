@@ -2,107 +2,24 @@ import { readFileSync, mkdirSync } from "fs";
 import { resolve, extname } from "path";
 import { load } from "js-yaml";
 import { parse as parseJsonc } from "jsonc-parser";
-import { createHash, randomUUID } from "crypto";
-import { validateDatabase, validateSemantics } from "./utils/validator";
+import { randomUUID } from "crypto";
+import { validateDatabase, validateSemantics, validateTemplate } from "~/utils/validator";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
 import { JSONFilePreset } from "lowdb/node";
+import { computeDigest } from "~/utils/crypto";
+import type {
+  DatabaseSchema,
+  Template,
+  ConfigBlob,
+  ManifestData,
+  ImageConfig,
+  ImageRootFS,
+  ImageHistoryEntry
+} from "~/types";
+import { DEFAULT_DATABASE } from "~/constants";
 
 const log = console.log;
-
-interface TemplateAuth {
-  username: string;
-  password: string;
-}
-
-interface TemplateRepository {
-  name: string;
-  tags: string[];
-  format?: "oci" | "docker";
-  multiarch?: boolean;
-  architectures?: string[];
-  os?: string;
-}
-
-interface Template {
-  auth?: TemplateAuth[];
-  repositories: TemplateRepository[];
-}
-
-interface ImageHistoryEntry {
-  created?: string;
-  created_by?: string;
-  comment?: string;
-  empty_layer?: boolean;
-}
-
-interface ImageConfig {
-  User?: string;
-  ExposedPorts?: Record<string, Record<string, never>>;
-  Env?: string[];
-  Entrypoint?: string[];
-  Cmd?: string[];
-  Volumes?: Record<string, Record<string, never>>;
-  WorkingDir?: string;
-  Labels?: Record<string, string>;
-  StopSignal?: string;
-}
-
-interface ImageRootFS {
-  type: string;
-  diff_ids: string[];
-}
-
-interface ConfigBlob {
-  architecture: string;
-  os: string;
-  created: string;
-  config: ImageConfig;
-  rootfs: ImageRootFS;
-  history: ImageHistoryEntry[];
-}
-
-interface ManifestData {
-  schemaVersion: number;
-  mediaType: string;
-  config?: {
-    mediaType: string;
-    digest: string;
-    size: number;
-  };
-  layers?: Array<{
-    mediaType: string;
-    digest: string;
-    size: number;
-  }>;
-  manifests?: Array<{
-    mediaType: string;
-    digest: string;
-    size: number;
-    platform: {
-      architecture: string;
-      os: string;
-    };
-  }>;
-}
-
-interface DatabaseSchema {
-  auth: TemplateAuth[];
-  repositories: { name: string }[];
-  tags: Record<string, { tag: string; digest: string }[]>;
-  manifests: Record<
-    string,
-    {
-      type: "oci" | "docker" | "oci-index" | "docker-list";
-      data: ManifestData;
-    }
-  >;
-  blobs: Record<string, ConfigBlob>;
-}
-
-function computeDigest(content: string): string {
-  return "sha256:" + createHash("sha256").update(content).digest("hex");
-}
 
 function generateRandomSize(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -422,6 +339,7 @@ export async function generateDatabase(
 
 export async function generateDatabaseFromTemplate(
   templatePath: string,
+  outputPath?: string,
 ): Promise<string> {
   const fullTemplatePath = resolve(templatePath);
   const fileExtension = extname(fullTemplatePath).toLowerCase();
@@ -442,29 +360,31 @@ export async function generateDatabaseFromTemplate(
     );
   }
 
-  if (!template.repositories || !Array.isArray(template.repositories)) {
-    throw new Error('Template must contain a "repositories" array');
-  }
+  // Validate template against JSON schema
+  log(`
+${chalk.blue("Validating template...")}`);
+  validateTemplate(template);
 
   log(`
 ${chalk.blue("Generating database from template...")}
   ${chalk.gray("Repositories:")} ${chalk.white(template.repositories.length)}
   ${chalk.gray("Authentication:")} ${chalk.white(template.auth ? "enabled" : "disabled")}`);
 
-  const uuid = randomUUID();
-  const outputDir = resolve("data");
-  const outputPath = resolve(outputDir, `${uuid}.json`);
+  // Determine output path
+  let finalOutputPath: string;
+  if (outputPath) {
+    finalOutputPath = resolve(outputPath);
+  } else {
+    const uuid = randomUUID();
+    const outputDir = resolve("data");
+    finalOutputPath = resolve(outputDir, `${uuid}.json`);
+  }
 
+  // Ensure output directory exists
+  const outputDir = finalOutputPath.substring(0, finalOutputPath.lastIndexOf('/'));
   mkdirSync(outputDir, { recursive: true });
 
-  const defaultData: DatabaseSchema = {
-    auth: [],
-    repositories: [],
-    tags: {},
-    manifests: {},
-    blobs: {},
-  };
-  const db = await JSONFilePreset<DatabaseSchema>(outputPath, defaultData);
+  const db = await JSONFilePreset<DatabaseSchema>(finalOutputPath, DEFAULT_DATABASE);
 
   await generateDatabase(template, db);
 
@@ -475,11 +395,11 @@ ${chalk.blue("Validating generated database...")}`);
 
   log(`
 ${chalk.green("Successfully generated database!")}
-  ${chalk.gray("Output:")} ${chalk.cyan(outputPath)}
+  ${chalk.gray("Output:")} ${chalk.cyan(finalOutputPath)}
   ${chalk.gray("Repositories:")} ${chalk.white(db.data.repositories.length)}
   ${chalk.gray("Total tags:")} ${chalk.white(Object.values(db.data.tags).reduce((sum, tags) => sum + tags.length, 0))}
   ${chalk.gray("Manifests:")} ${chalk.white(Object.keys(db.data.manifests).length)}
   ${chalk.gray("Blobs:")} ${chalk.white(Object.keys(db.data.blobs).length)}`);
 
-  return outputPath;
+  return finalOutputPath;
 }

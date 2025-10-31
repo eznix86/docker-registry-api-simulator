@@ -5,75 +5,148 @@
       "name": "untagged-repo"
     },
     {
-      "name": "single-arch"
+      "name": "single-arch-oci"
     },
     {
-      "name": "multi-arch"
+      "name": "single-arch-docker"
+    },
+    {
+      "name": "multi-arch-oci"
+    },
+    {
+      "name": "multi-arch-docker"
     }
   ],
   "tags": {
     "untagged-repo": [],
-    "single-arch": [
+    "single-arch-oci": [
       {
         "tag": "latest",
-        "digest": "sha256:aaa1111d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b"
-      },
-      {
-        "tag": "latest-docker",
-        "digest": "sha256:aaa2222f8f4e53081737a42ed115g80250cbfcb3d9fd894cf5g29872g9g3cf7c"
+        "digest": "sha256:d9d25ff91fcd73786b056608c0a9f24130c9224b1ed7d93c978e38706d3e3da7"
       }
     ],
-    "multi-arch": [
+    "single-arch-docker": [
       {
         "tag": "latest",
-        "digest": "sha256:bbb2222e5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e"
-      },
+        "digest": "sha256:54ea733bc4eb5743fdc7e2b7c698225fdc3444a27d876ff4c3d1d91b95b8d343"
+      }
+    ],
+    "multi-arch-oci": [
       {
-        "tag": "latest-docker",
-        "digest": "sha256:bbb3333f6ef518394edfb9c11e6d48c7g6c5g9eag5f8b9g8f9e8f9g9f9g9f9g9f"
+        "tag": "latest",
+        "digest": "sha256:8cb3e340d817cf5ba3f2aad37b421ac6f3f12d02b080d0f9788936fdeb9a784d"
+      }
+    ],
+    "multi-arch-docker": [
+      {
+        "tag": "latest",
+        "digest": "sha256:6867e05107759e43d7e2e21b130e847c1edb1ec50e52f04d4b711ad8406133a1"
       }
     ]
   },
   "manifests": {
-    "sha256:aaa1111d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b": {
+    "sha256:d9d25ff91fcd73786b056608c0a9f24130c9224b1ed7d93c978e38706d3e3da7": {
       "type": "oci",
       "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.oci.image.manifest.v1+json",
         "config": {
           "mediaType": "application/vnd.oci.image.config.v1+json",
-          "digest": "sha256:ccc3333a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c5e8e",
-          "size": 1471
+          "digest": "sha256:5727f6aef147f9b3587a80823d5028827002d19e0d38326629ab85e3730aaa34",
+          "size": 1333
         },
         "layers": [
           {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:ddd4444f20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8",
-            "size": 3374563
+            "digest": "sha256:20b5975924760bb17e9fdf11aaa3bf58716c96f9d20a595068afa13b61df5885",
+            "size": 34727318
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:e10d9b0faf9f68812df108cea7a88b76f543f06eefbc33bd32a4f2728c5ca6d6",
+            "size": 28461583
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:ad62e0819d8f8c68f57a69628fe1b0e418e44c9e2b2bf4080ea6ff96d1cb36d1",
+            "size": 27836785
           }
         ]
       }
     },
-    "sha256:aaa2222f8f4e53081737a42ed115g80250cbfcb3d9fd894cf5g29872g9g3cf7c": {
+    "sha256:54ea733bc4eb5743fdc7e2b7c698225fdc3444a27d876ff4c3d1d91b95b8d343": {
       "type": "docker",
       "data": {
         "schemaVersion": 2,
         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
         "config": {
           "mediaType": "application/vnd.docker.container.image.v1+json",
-          "digest": "sha256:ccc3333a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c5e8e",
-          "size": 1471
+          "digest": "sha256:33091c69efaf0d8d5a179a4071d611c1ff99e5caad107dbe90c98a4621f83257",
+          "size": 1135
         },
         "layers": [
           {
             "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
-            "digest": "sha256:ddd4444f20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8",
-            "size": 3374563
+            "digest": "sha256:bd5a24a9898b94acc44e500d0e2108b6350a3272d2e928fa32d3261c234f0843",
+            "size": 24976851
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "digest": "sha256:427f7fa7e5b244b046f21dc5f8b7004219505ea436e03e63ca36d8801ce7ddf9",
+            "size": 75477881
           }
         ]
       }
     },
-    "sha256:bbb2222e5de407283dcea8b00d5c37b6f5b4f8d9f4e7a8f7e8d7e8f8e8f8e8f8e": {
+    "sha256:59aeb1e1d616914935672349a7b5433923e0ea6ff966935d1c62fd5f00ecb8a6": {
+      "type": "oci",
+      "data": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:1ecf7d4b1e50bc13c62e32601b6a22984179f0741df5b364fd985588523a11f4",
+          "size": 898
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:c6cd8c578769e66d757af95792f4559b49d2a2841439a223d30fdba2e0256ac7",
+            "size": 49427293
+          }
+        ]
+      }
+    },
+    "sha256:e56a275c7bcd1cef31f4006758cf970320e4e2a3b109c8c8a62a5782935fe5c1": {
+      "type": "oci",
+      "data": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:1baa2a945f1aafe9809714c80a28827b1fdf7f30eba300e99cc9c946821d0c01",
+          "size": 1331
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:5afcd6d0cb6a7add6196e886e2a12ffdbbac94de50aa11a7049821a38d619d47",
+            "size": 17826536
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:ff406e4446cbcd62226f025bcc45464f80b69f1b8ba0ccc243b3b47b3acaad2c",
+            "size": 6693681
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:49fb311a9c06f57ec7d450ea7fb1613dea916d1d461e08a0d0af2898ccd81b44",
+            "size": 97569519
+          }
+        ]
+      }
+    },
+    "sha256:8cb3e340d817cf5ba3f2aad37b421ac6f3f12d02b080d0f9788936fdeb9a784d": {
       "type": "oci-index",
       "data": {
         "schemaVersion": 2,
@@ -81,8 +154,8 @@
         "manifests": [
           {
             "mediaType": "application/vnd.oci.image.manifest.v1+json",
-            "digest": "sha256:eee5555a1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1",
-            "size": 1234,
+            "digest": "sha256:59aeb1e1d616914935672349a7b5433923e0ea6ff966935d1c62fd5f00ecb8a6",
+            "size": 406,
             "platform": {
               "architecture": "amd64",
               "os": "linux"
@@ -90,8 +163,8 @@
           },
           {
             "mediaType": "application/vnd.oci.image.manifest.v1+json",
-            "digest": "sha256:fff6666b2372e7e5430816374042gb115afbcc3d9fd783ce5f38872f9f2be2f9",
-            "size": 1235,
+            "digest": "sha256:e56a275c7bcd1cef31f4006758cf970320e4e2a3b109c8c8a62a5782935fe5c1",
+            "size": 724,
             "platform": {
               "architecture": "arm64",
               "os": "linux"
@@ -100,7 +173,45 @@
         ]
       }
     },
-    "sha256:bbb3333f6ef518394edfb9c11e6d48c7g6c5g9eag5f8b9g8f9e8f9g9f9g9f9g9f": {
+    "sha256:4aa53f08b8837ab409ae6bf47caf0537b90f09428be71f3430d6e0174d1a5451": {
+      "type": "docker",
+      "data": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "config": {
+          "mediaType": "application/vnd.docker.container.image.v1+json",
+          "digest": "sha256:8add5ad26adb70bc906ed2f1d20b1ef18ee9ad923c368ab20345c5d4f6fa113e",
+          "size": 958
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "digest": "sha256:6cadb791f2e0c1cf870704f1e454389c8982817385109ce78487999c190bab6f",
+            "size": 42156710
+          }
+        ]
+      }
+    },
+    "sha256:d8983bbaf08a73b0d84877faee6a53dea746841fcb6331cfe979d5c809ab4019": {
+      "type": "docker",
+      "data": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "config": {
+          "mediaType": "application/vnd.docker.container.image.v1+json",
+          "digest": "sha256:d3a65f5abf5b2fea938f68a22c3822fa7ca602d042a85feb91fed8d0f125c50c",
+          "size": 932
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "digest": "sha256:6e1961440a4c65d7c950bad54f35c38099cd93339c422b43b10bfa573d808332",
+            "size": 53705008
+          }
+        ]
+      }
+    },
+    "sha256:6867e05107759e43d7e2e21b130e847c1edb1ec50e52f04d4b711ad8406133a1": {
       "type": "docker-list",
       "data": {
         "schemaVersion": 2,
@@ -108,8 +219,8 @@
         "manifests": [
           {
             "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-            "digest": "sha256:eee5555a1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1",
-            "size": 1234,
+            "digest": "sha256:4aa53f08b8837ab409ae6bf47caf0537b90f09428be71f3430d6e0174d1a5451",
+            "size": 428,
             "platform": {
               "architecture": "amd64",
               "os": "linux"
@@ -117,8 +228,8 @@
           },
           {
             "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-            "digest": "sha256:fff6666b2372e7e5430816374042gb115afbcc3d9fd783ce5f38872f9f2be2f9",
-            "size": 1235,
+            "digest": "sha256:d8983bbaf08a73b0d84877faee6a53dea746841fcb6331cfe979d5c809ab4019",
+            "size": 428,
             "platform": {
               "architecture": "arm64",
               "os": "linux"
@@ -126,103 +237,283 @@
           }
         ]
       }
-    },
-    "sha256:eee5555a1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1": {
-      "type": "oci",
-      "data": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.oci.image.manifest.v1+json",
-        "config": {
-          "mediaType": "application/vnd.oci.image.config.v1+json",
-          "digest": "sha256:ggg7777e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c",
-          "size": 1500
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb",
-            "size": 3400000
-          }
-        ]
-      }
-    },
-    "sha256:fff6666b2372e7e5430816374042gb115afbcc3d9fd783ce5f38872f9f2be2f9": {
-      "type": "oci",
-      "data": {
-        "schemaVersion": 2,
-        "mediaType": "application/vnd.oci.image.manifest.v1+json",
-        "config": {
-          "mediaType": "application/vnd.oci.image.config.v1+json",
-          "digest": "sha256:iii9999f02b1e0b2dde0f64af9faccfceggc207e4g1979bg9c1d4f2faf7f6f8e1c",
-          "size": 1501
-        },
-        "layers": [
-          {
-            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
-            "digest": "sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa",
-            "size": 3500000
-          }
-        ]
-      }
     }
   },
   "blobs": {
-    "sha256:ccc3333a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c5e8e": {
+    "sha256:5727f6aef147f9b3587a80823d5028827002d19e0d38326629ab85e3730aaa34": {
       "architecture": "amd64",
       "os": "linux",
+      "created": "2025-08-16T04:11:17.899Z",
       "config": {
         "Env": [
-          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=4.19.1",
+          "APP_NAME=single-arch-oci"
         ],
         "Cmd": [
-          "/bin/sh"
-        ]
+          "/bin/sh",
+          "-c",
+          "single-arch-oci"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2025-08-16T04:11:17.899Z",
+          "org.opencontainers.image.title": "single-arch-oci",
+          "org.opencontainers.image.description": "Audentia triduana inflammatio thymbra conscendo adeo tenus.",
+          "org.opencontainers.image.source": "https://github.com/Dandre.Sipes/single-arch-oci",
+          "org.opencontainers.image.version": "4.19.1",
+          "org.opencontainers.image.licenses": "GPL-3.0"
+        },
+        "StopSignal": "SIGTERM"
       },
       "rootfs": {
         "type": "layers",
         "diff_ids": [
-          "sha256:ddd4444f20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"
+          "sha256:20b5975924760bb17e9fdf11aaa3bf58716c96f9d20a595068afa13b61df5885",
+          "sha256:e10d9b0faf9f68812df108cea7a88b76f543f06eefbc33bd32a4f2728c5ca6d6",
+          "sha256:ad62e0819d8f8c68f57a69628fe1b0e418e44c9e2b2bf4080ea6ff96d1cb36d1"
         ]
       },
-      "created": "2024-12-05T12:14:58.999Z"
+      "history": [
+        {
+          "created": "2025-02-20T03:42:53.446Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-05-27T14:43:41.128Z",
+          "created_by": "COPY . /app",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": false
+        },
+        {
+          "created": "2025-06-18T13:22:33.224Z",
+          "created_by": "RUN /bin/sh -c mkdir -p /app",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": false
+        }
+      ]
     },
-    "sha256:ggg7777e01a0d0a1dcd9e539f8e9bbb4ebbf196d3f0757af8b8d1e9f7e5c0d5a5c": {
+    "sha256:33091c69efaf0d8d5a179a4071d611c1ff99e5caad107dbe90c98a4621f83257": {
       "architecture": "amd64",
       "os": "linux",
+      "created": "2025-10-01T13:31:57.532Z",
       "config": {
         "Env": [
-          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=4.19.15",
+          "APP_NAME=single-arch-docker"
         ],
         "Cmd": [
-          "/bin/sh"
-        ]
+          "/bin/sh",
+          "-c",
+          "single-arch-docker"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2025-10-01T13:31:57.532Z",
+          "org.opencontainers.image.title": "single-arch-docker",
+          "org.opencontainers.image.description": "Colo thalassinus acer pariatur sit alius error occaecati consequatur.",
+          "org.opencontainers.image.source": "https://github.com/Nash53/single-arch-docker",
+          "org.opencontainers.image.version": "4.19.15",
+          "org.opencontainers.image.licenses": "ISC"
+        },
+        "StopSignal": "SIGTERM"
       },
       "rootfs": {
         "type": "layers",
         "diff_ids": [
-          "sha256:hhh8888bcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fb"
+          "sha256:bd5a24a9898b94acc44e500d0e2108b6350a3272d2e928fa32d3261c234f0843",
+          "sha256:427f7fa7e5b244b046f21dc5f8b7004219505ea436e03e63ca36d8801ce7ddf9"
         ]
       },
-      "created": "2025-04-20T10:43:58.567Z"
+      "history": [
+        {
+          "created": "2024-10-17T11:06:04.993Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-07-10T10:29:16.642Z",
+          "created_by": "COPY . /app",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": false
+        }
+      ]
     },
-    "sha256:iii9999f02b1e0b2dde0f64af9faccfceggc207e4g1979bg9c1d4f2faf7f6f8e1c": {
+    "sha256:1ecf7d4b1e50bc13c62e32601b6a22984179f0741df5b364fd985588523a11f4": {
+      "architecture": "amd64",
+      "os": "linux",
+      "created": "2025-04-20T01:08:13.192Z",
+      "config": {
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=2.15.15",
+          "APP_NAME=multi-arch-oci"
+        ],
+        "Cmd": [
+          "/bin/sh",
+          "-c",
+          "multi-arch-oci"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2025-04-20T01:08:13.192Z",
+          "org.opencontainers.image.title": "multi-arch-oci",
+          "org.opencontainers.image.description": "Dicta necessitatibus coepi casus vita.",
+          "org.opencontainers.image.source": "https://github.com/Leila_White/multi-arch-oci",
+          "org.opencontainers.image.version": "2.15.15",
+          "org.opencontainers.image.licenses": "ISC"
+        },
+        "StopSignal": "SIGTERM"
+      },
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:c6cd8c578769e66d757af95792f4559b49d2a2841439a223d30fdba2e0256ac7"
+        ]
+      },
+      "history": [
+        {
+          "created": "2024-12-18T08:00:11.630Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        }
+      ]
+    },
+    "sha256:1baa2a945f1aafe9809714c80a28827b1fdf7f30eba300e99cc9c946821d0c01": {
       "architecture": "arm64",
       "os": "linux",
+      "created": "2025-03-24T00:08:25.904Z",
       "config": {
         "Env": [
-          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=2.19.4",
+          "APP_NAME=multi-arch-oci"
         ],
         "Cmd": [
-          "/bin/sh"
-        ]
+          "/bin/sh",
+          "-c",
+          "multi-arch-oci"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2025-03-24T00:08:25.904Z",
+          "org.opencontainers.image.title": "multi-arch-oci",
+          "org.opencontainers.image.description": "Absorbeo tepesco tibi arbustum tergiversatio caecus voluptatum damno.",
+          "org.opencontainers.image.source": "https://github.com/Jack.Kris2/multi-arch-oci",
+          "org.opencontainers.image.version": "2.19.4",
+          "org.opencontainers.image.licenses": "MIT"
+        },
+        "StopSignal": "SIGTERM"
       },
       "rootfs": {
         "type": "layers",
         "diff_ids": [
-          "sha256:jjj0000cde30661532fc3e820bbf96067aa106e8ca825ad2d94e63ff72e68fcbafa"
+          "sha256:5afcd6d0cb6a7add6196e886e2a12ffdbbac94de50aa11a7049821a38d619d47",
+          "sha256:ff406e4446cbcd62226f025bcc45464f80b69f1b8ba0ccc243b3b47b3acaad2c",
+          "sha256:49fb311a9c06f57ec7d450ea7fb1613dea916d1d461e08a0d0af2898ccd81b44"
         ]
       },
-      "created": "2025-09-05T02:38:44.809Z"
+      "history": [
+        {
+          "created": "2024-11-04T11:33:19.520Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2024-10-27T06:13:01.263Z",
+          "created_by": "COPY . /app",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2024-04-05T10:04:57.855Z",
+          "created_by": "RUN /bin/sh -c mkdir -p /app",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        }
+      ]
+    },
+    "sha256:8add5ad26adb70bc906ed2f1d20b1ef18ee9ad923c368ab20345c5d4f6fa113e": {
+      "architecture": "amd64",
+      "os": "linux",
+      "created": "2025-03-26T02:34:44.505Z",
+      "config": {
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=6.11.17",
+          "APP_NAME=multi-arch-docker"
+        ],
+        "Cmd": [
+          "/bin/sh",
+          "-c",
+          "multi-arch-docker"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2025-03-26T02:34:44.505Z",
+          "org.opencontainers.image.title": "multi-arch-docker",
+          "org.opencontainers.image.description": "Spectaculum solus blandior cupio argentum consequatur denuncio conservo comptus.",
+          "org.opencontainers.image.source": "https://github.com/Carrie47/multi-arch-docker",
+          "org.opencontainers.image.version": "6.11.17",
+          "org.opencontainers.image.licenses": "BSD-3-Clause"
+        },
+        "StopSignal": "SIGTERM"
+      },
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:6cadb791f2e0c1cf870704f1e454389c8982817385109ce78487999c190bab6f"
+        ]
+      },
+      "history": [
+        {
+          "created": "2024-04-03T02:23:33.847Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        }
+      ]
+    },
+    "sha256:d3a65f5abf5b2fea938f68a22c3822fa7ca602d042a85feb91fed8d0f125c50c": {
+      "architecture": "arm64",
+      "os": "linux",
+      "created": "2024-12-10T22:13:43.708Z",
+      "config": {
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "APP_VERSION=2.10.15",
+          "APP_NAME=multi-arch-docker"
+        ],
+        "Cmd": [
+          "/bin/sh",
+          "-c",
+          "multi-arch-docker"
+        ],
+        "WorkingDir": "/app",
+        "Labels": {
+          "org.opencontainers.image.created": "2024-12-10T22:13:43.708Z",
+          "org.opencontainers.image.title": "multi-arch-docker",
+          "org.opencontainers.image.description": "Aut rem ducimus quidem debilito candidus vetus arcesso tandem.",
+          "org.opencontainers.image.source": "https://github.com/Willard61/multi-arch-docker",
+          "org.opencontainers.image.version": "2.10.15",
+          "org.opencontainers.image.licenses": "MIT"
+        },
+        "StopSignal": "SIGTERM"
+      },
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:6e1961440a4c65d7c950bad54f35c38099cd93339c422b43b10bfa573d808332"
+        ]
+      },
+      "history": [
+        {
+          "created": "2024-05-06T13:10:23.958Z",
+          "created_by": "# linux base layer",
+          "comment": "buildkit.dockerfile.v0"
+        }
+      ]
     }
   }
 }

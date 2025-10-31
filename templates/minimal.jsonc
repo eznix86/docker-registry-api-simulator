@@ -1,0 +1,9 @@
+{
+  "$schema": "../template.schema.json",
+  "repositories": [
+    {
+      "name": "alpine",
+      "tags": ["latest"]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "../template.schema.json",
+  "repositories": [
+    {
+      "name": "untagged-repo",
+      "tags": []
+    },
+    {
+      "name": "single-arch-oci",
+      "tags": ["latest"],
+      "format": "oci"
+    },
+    {
+      "name": "single-arch-docker",
+      "tags": ["latest"],
+      "format": "docker"
+    },
+    {
+      "name": "multi-arch-oci",
+      "tags": ["latest"],
+      "format": "oci",
+      "multiarch": true,
+      "architectures": ["amd64", "arm64"]
+    },
+    {
+      "name": "multi-arch-docker",
+      "tags": ["latest"],
+      "format": "docker",
+      "multiarch": true,
+      "architectures": ["amd64", "arm64"]
+    }
+  ]
+}

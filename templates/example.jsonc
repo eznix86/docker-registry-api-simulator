@@ -18,7 +18,7 @@
   "repositories": [
     // Simple repository with default settings (OCI format, single-arch amd64)
     {
-      "name": "alpine",
+      "name": "library/alpine",
       "tags": ["latest", "3.18", "3.17"]
     },
 

@@ -1,143 +1,52 @@
-import * as v from "valibot";
 import chalk from "chalk";
+import Ajv from "ajv";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 const log = console.log;
 
-const AuthUserSchema = v.object({
-  username: v.pipe(v.string(), v.minLength(1, "Username must not be empty")),
-  password: v.pipe(v.string(), v.minLength(1, "Password must not be empty")),
-});
+// Load and compile JSON schemas
+const templateSchemaPath = resolve("template.schema.json");
+const templateSchemaJson = JSON.parse(readFileSync(templateSchemaPath, "utf-8"));
 
-const RepositorySchema = v.object({
-  name: v.pipe(
-    v.string(),
-    v.minLength(1, "Repository name must not be empty"),
-    v.regex(
-      /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/,
-      "Repository name must be lowercase alphanumeric with optional separators",
-    ),
-  ),
-});
+const databaseSchemaPath = resolve("database.schema.json");
+const databaseSchemaJson = JSON.parse(readFileSync(databaseSchemaPath, "utf-8"));
 
-const TagSchema = v.object({
-  tag: v.pipe(v.string(), v.minLength(1, "Tag must not be empty")),
-  digest: v.pipe(
-    v.string(),
-    v.startsWith("sha256:", "Digest must start with sha256:"),
-    v.minLength(15, "Digest must be at least 15 characters"),
-  ),
-});
-
-const ManifestSchema = v.object({
-  type: v.picklist(
-    ["oci", "docker", "oci-index", "docker-list"],
-    "Type must be one of: oci, docker, oci-index, docker-list",
-  ),
-  data: v.object({
-    schemaVersion: v.pipe(v.number(), v.integer(), v.minValue(2)),
-    mediaType: v.string(),
-    config: v.optional(
-      v.object({
-        mediaType: v.string(),
-        digest: v.pipe(v.string(), v.startsWith("sha256:")),
-        size: v.pipe(v.number(), v.integer(), v.minValue(0)),
-      }),
-    ),
-    layers: v.optional(
-      v.array(
-        v.object({
-          mediaType: v.string(),
-          digest: v.pipe(v.string(), v.startsWith("sha256:")),
-          size: v.pipe(v.number(), v.integer(), v.minValue(0)),
-        }),
-      ),
-    ),
-    manifests: v.optional(
-      v.array(
-        v.object({
-          mediaType: v.string(),
-          digest: v.pipe(v.string(), v.startsWith("sha256:")),
-          size: v.pipe(v.number(), v.integer(), v.minValue(0)),
-          platform: v.optional(
-            v.object({
-              architecture: v.string(),
-              os: v.string(),
-            }),
-          ),
-        }),
-      ),
-    ),
-  }),
-});
-
-const BlobSchema = v.object({
-  architecture: v.optional(v.string()),
-  os: v.optional(v.string()),
-  created: v.optional(v.string()),
-  config: v.optional(
-    v.object({
-      User: v.optional(v.string()),
-      ExposedPorts: v.optional(v.record(v.string(), v.any())),
-      Env: v.optional(v.array(v.string())),
-      Entrypoint: v.optional(v.array(v.string())),
-      Cmd: v.optional(v.array(v.string())),
-      Volumes: v.optional(v.record(v.string(), v.any())),
-      WorkingDir: v.optional(v.string()),
-      Labels: v.optional(v.record(v.string(), v.string())),
-      StopSignal: v.optional(v.string()),
-    }),
-  ),
-  rootfs: v.optional(
-    v.object({
-      type: v.string(),
-      diff_ids: v.array(v.string()),
-    }),
-  ),
-  history: v.optional(
-    v.array(
-      v.object({
-        created: v.optional(v.string()),
-        created_by: v.optional(v.string()),
-        comment: v.optional(v.string()),
-        empty_layer: v.optional(v.boolean()),
-      }),
-    ),
-  ),
-});
-
-const DatabaseSchema = v.object({
-  auth: v.array(AuthUserSchema),
-  repositories: v.array(RepositorySchema),
-  tags: v.record(v.string(), v.array(TagSchema)),
-  manifests: v.record(
-    v.pipe(v.string(), v.startsWith("sha256:")),
-    ManifestSchema,
-  ),
-  blobs: v.record(v.pipe(v.string(), v.startsWith("sha256:")), BlobSchema),
-});
+const ajv = new Ajv({ allErrors: true, strict: false });
+const validateTemplateSchema = ajv.compile(templateSchemaJson);
+const validateDatabaseSchema = ajv.compile(databaseSchemaJson);
 
 export function validateDatabase(data: unknown): void {
-  try {
-    v.parse(DatabaseSchema, data);
-    log(`${chalk.green("Database validation passed")}`);
-  } catch (error) {
-    if (error instanceof v.ValiError) {
-      console.error(`${chalk.red("Database validation failed:")}`);
-      for (const issue of error.issues) {
-        const path = issue.path?.map((p: any) => p.key).join(".") || "root";
-        console.error(`${chalk.yellow(`  - ${path}:`)} ${issue.message}`);
+  const valid = validateDatabaseSchema(data);
+
+  if (!valid) {
+    console.error(`${chalk.red("Database validation failed:")}`);
+
+    if (validateDatabaseSchema.errors) {
+      for (const error of validateDatabaseSchema.errors) {
+        const path = error.instancePath || "root";
+        const message = error.message || "validation error";
+        console.error(`${chalk.yellow(`  - ${path}:`)} ${message}`);
+
+        if (error.params && Object.keys(error.params).length > 0) {
+          const params = JSON.stringify(error.params);
+          console.error(`${chalk.gray(`    ${params}`)}`);
+        }
       }
-      throw new Error(
-        "Database validation failed. Please check the errors above.",
-      );
     }
-    throw error;
+
+    throw new Error(
+      "Database validation failed. Please check the errors above.",
+    );
   }
+
+  log(`${chalk.green("Database validation passed")}`);
 }
 
 export function validateSemantics(data: any): void {
   const errors: string[] = [];
 
+  // Validate tag references to manifests
   for (const [repoName, tags] of Object.entries(data.tags)) {
     if (!Array.isArray(tags)) continue;
 
@@ -150,6 +59,7 @@ export function validateSemantics(data: any): void {
     }
   }
 
+  // Validate repositories have corresponding tags
   for (const repoName of Object.keys(data.tags)) {
     if (!data.repositories.some((r: any) => r.name === repoName)) {
       errors.push(
@@ -158,6 +68,7 @@ export function validateSemantics(data: any): void {
     }
   }
 
+  // Validate manifest config references to blobs
   for (const [digest, manifest] of Object.entries(data.manifests) as [
     string,
     any,
@@ -171,6 +82,7 @@ export function validateSemantics(data: any): void {
     }
   }
 
+  // Validate multi-arch manifest references
   for (const [digest, manifest] of Object.entries(data.manifests) as [
     string,
     any,
@@ -197,4 +109,31 @@ export function validateSemantics(data: any): void {
   }
 
   log(`${chalk.green("Semantic validation passed")}`);
+}
+
+export function validateTemplate(data: unknown): void {
+  const valid = validateTemplateSchema(data);
+
+  if (!valid) {
+    console.error(`${chalk.red("Template validation failed:")}`);
+
+    if (validateTemplateSchema.errors) {
+      for (const error of validateTemplateSchema.errors) {
+        const path = error.instancePath || "root";
+        const message = error.message || "validation error";
+        console.error(`${chalk.yellow(`  - ${path}:`)} ${message}`);
+
+        if (error.params && Object.keys(error.params).length > 0) {
+          const params = JSON.stringify(error.params);
+          console.error(`${chalk.gray(`    ${params}`)}`);
+        }
+      }
+    }
+
+    throw new Error(
+      "Template validation failed. Please check the errors above.",
+    );
+  }
+
+  log(`${chalk.green("Template validation passed")}`);
 }

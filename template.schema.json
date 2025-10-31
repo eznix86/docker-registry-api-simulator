@@ -5,6 +5,10 @@
   "description": "Template for generating Docker Registry API v2 database files",
   "type": "object",
   "properties": {
+    "$schema": {
+      "description": "JSON Schema reference",
+      "type": "string"
+    },
     "auth": {
       "description": "Optional authentication credentials",
       "type": "array",
@@ -32,16 +36,15 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "Repository name (lowercase alphanumeric with optional separators)",
-            "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+            "description": "Repository name (lowercase alphanumeric with optional separators and namespaces)",
+            "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*$"
           },
           "tags": {
             "type": "array",
             "description": "List of tags for this repository",
             "items": {
               "type": "string"
-            },
-            "minItems": 1
+            }
           },
           "format": {
             "type": "string",

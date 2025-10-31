@@ -1,54 +1,15 @@
 import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { JSONFilePreset } from "lowdb/node";
-import { createHash } from "crypto";
-import { validateDatabase, validateSemantics } from "./utils/validator";
-import { generateDatabase } from "./generator";
+import { validateDatabase, validateSemantics } from "~/utils/validator";
+import { generateDatabase } from "~/generator";
+import { computeDigest } from "~/utils/crypto";
+import type { DatabaseSchema, Template, Manifest } from "~/types";
+import { DEFAULT_DATABASE, DOCKER_DISTRIBUTION_API_VERSION } from "~/constants";
 import chalk from "chalk";
+import logixlysia from "logixlysia";
 
 const log = console.log;
-
-interface Repository {
-  name: string;
-}
-
-interface Tag {
-  tag: string;
-  digest: string;
-}
-
-interface AuthUser {
-  username: string;
-  password: string;
-}
-
-interface Manifest {
-  type: "oci" | "docker" | "oci-index" | "docker-list";
-  data: any;
-}
-
-interface DatabaseSchema {
-  auth: AuthUser[];
-  repositories: Repository[];
-  tags: Record<string, Tag[]>;
-  manifests: Record<string, Manifest>;
-  blobs: Record<string, any>;
-}
-
-interface PushTemplate {
-  repositories: Array<{
-    name: string;
-    tags: string[];
-    format?: "oci" | "docker";
-    multiarch?: boolean;
-    architectures?: string[];
-    os?: string;
-  }>;
-}
-
-function computeDigest(content: string): string {
-  return "sha256:" + createHash("sha256").update(content).digest("hex");
-}
 
 function buildLinkHeader(baseUrl: string, n: number, last: string): string {
   return `<${baseUrl}?n=${n}&last=${last}>; rel="next"`;
@@ -129,7 +90,7 @@ function registryError(code: string, message: string, status = 404) {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Docker-Distribution-API-Version": "registry/2.0",
+      "Docker-Distribution-API-Version": DOCKER_DISTRIBUTION_API_VERSION,
     },
   });
 }
@@ -147,15 +108,8 @@ function findOrphanedBlobs(manifests: Record<string, Manifest>): Set<string> {
   return referencedBlobs;
 }
 
-export async function createServer(dbFile: string, port: number) {
-  const defaultData: DatabaseSchema = {
-    auth: [],
-    repositories: [],
-    tags: {},
-    manifests: {},
-    blobs: {},
-  };
-  const db = await JSONFilePreset<DatabaseSchema>(dbFile, defaultData);
+export async function createServer(dbFile: string, port: number, throttle = 0) {
+  const db = await JSONFilePreset<DatabaseSchema>(dbFile, DEFAULT_DATABASE);
 
   log(`${chalk.blue("Loaded database from:")} ${chalk.cyan(dbFile)}`);
 
@@ -166,6 +120,13 @@ export async function createServer(dbFile: string, port: number) {
   log(
     `${chalk.blue("Authentication:")} ${chalk.cyan(db.data.auth && db.data.auth.length > 0 ? "enabled" : "disabled")}`,
   );
+
+  if (throttle > 0) {
+    log(
+      `${chalk.blue("Throttle:")} ${chalk.cyan(`${throttle}ms delay per request`)}`,
+    );
+  }
+
 
   // Helper functions that need access to db
   function checkBasicAuth(authHeader: string | undefined): boolean {
@@ -197,7 +158,7 @@ export async function createServer(dbFile: string, port: number) {
         status: 401,
         headers: {
           "Content-Type": "application/json",
-          "Docker-Distribution-API-Version": "registry/2.0",
+          "Docker-Distribution-API-Version": DOCKER_DISTRIBUTION_API_VERSION,
           "WWW-Authenticate": 'Basic realm="Docker Registry"',
         },
       },
@@ -227,8 +188,23 @@ export async function createServer(dbFile: string, port: number) {
         },
       }),
     )
+    .use(
+      logixlysia({
+        config: {
+          showStartupMessage: true,
+          startupMessageFormat: "simple",
+          timestamp: {
+            translateTime: "yyyy-mm-dd HH:MM:ss.SSS",
+          },
+          ip: true,
+          customLogFormat:
+            "{now} {level} {duration} {method} {pathname} {status} {message} {ip}",
+        },
+      }),
+    )
+
     .onBeforeHandle(({ set, headers, request }) => {
-      set.headers["Docker-Distribution-API-Version"] = "registry/2.0";
+      set.headers["Docker-Distribution-API-Version"] = DOCKER_DISTRIBUTION_API_VERSION;
 
       const url = new URL(request.url);
       if (
@@ -236,6 +212,11 @@ export async function createServer(dbFile: string, port: number) {
         url.pathname !== "/swagger" &&
         !url.pathname.startsWith("/swagger/")
       ) {
+
+        if (throttle > 0) {
+          Bun.sleepSync(throttle);
+        }
+
         if (!checkBasicAuth(headers.authorization)) {
           return unauthorizedResponse();
         }
@@ -284,6 +265,7 @@ export async function createServer(dbFile: string, port: number) {
             repos[repos.length - 1]!,
           );
         }
+
 
         return { repositories: repos };
       },
@@ -417,7 +399,7 @@ export async function createServer(dbFile: string, port: number) {
           return new Response(null, {
             status: 304,
             headers: {
-              "Docker-Distribution-API-Version": "registry/2.0",
+              "Docker-Distribution-API-Version": DOCKER_DISTRIBUTION_API_VERSION,
             },
           });
         }
@@ -598,7 +580,7 @@ export async function createServer(dbFile: string, port: number) {
       "/v2/push",
       async ({ body, set }) => {
         try {
-          await generateDatabase(body, db);
+          await generateDatabase(body as Template, db);
           await db.write();
 
           set.status = 201;

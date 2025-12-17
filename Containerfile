@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.1-alpine AS builder
+FROM oven/bun:1.3.5-alpine AS builder
 ENV NODE_ENV=production
 
 WORKDIR /app
@@ -11,7 +11,7 @@ COPY src ./src
 
 RUN bun run build
 
-FROM oven/bun:1.3.1-alpine
+FROM oven/bun:1.3.5-alpine
 
 WORKDIR /app
 

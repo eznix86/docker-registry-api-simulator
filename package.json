@@ -39,7 +39,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@antfu/eslint-config": "^6.2.0",
+		"@antfu/eslint-config": "^7.0.0",
 		"@elysiajs/swagger": "^1.3.1",
 		"@faker-js/faker": "^10.1.0",
 		"ajv": "^8.17.1",
